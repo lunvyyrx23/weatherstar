@@ -1,0 +1,196 @@
+@font-face {
+  font-family: Star4000;
+  src: url("/fonts/Star4000.ttf") format("truetype");
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Star4000, monospace;
+}
+
+body {
+  margin: 0;
+  background: #0a0a0a;
+  color: white;
+}
+
+#topbar {
+  height: 50px;
+  background: #0c0c18;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+
+#logo {
+  color: white;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+#logo span {
+  color: #ff3333;
+}
+
+#city-input {
+  height: 32px;
+  width: 260px;
+  background: #14142a;
+  color: white;
+  border: 1px solid #333366;
+  padding: 0 10px;
+}
+
+button {
+  height: 32px;
+  background: #18183a;
+  color: white;
+  border: 1px solid #333366;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+#screen {
+  position: relative;
+  width: 1091px;
+  height: 820px;
+  margin: 18px auto;
+  background: #001244 url("/bg/ws4000_bg.png") center / 100% 100% no-repeat;
+  overflow: hidden;
+}
+
+#page-header {
+  position: absolute;
+  top: 50px;
+  left: 248px;
+  color: #ffff00;
+  font-size: 44px;
+  line-height: 1.1;
+  z-index: 10;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+.page {
+  display: none;
+  position: absolute;
+  inset: 0;
+}
+
+.page.active {
+  display: block;
+}
+
+#cc-temp {
+  position: absolute;
+  top: 166px;
+  left: 197px;
+  font-size: 107px;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+#cc-cond {
+  position: absolute;
+  top: 269px;
+  left: 217px;
+  font-size: 30px;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+#cc-wind {
+  position: absolute;
+  top: 555px;
+  left: 124px;
+  font-size: 34px;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+#page-regional {
+  background: #001244;
+}
+
+#regional-basemap,
+#regional-dots,
+#regional-frame {
+  position: absolute;
+  inset: 0;
+}
+
+#regional-frame {
+  z-index: 3;
+  background: url("/bg/ws4000wherediditgo.png") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+#regional-dots {
+  z-index: 2;
+}
+
+#bottom-banner {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1091px;
+  height: 120px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  padding-bottom: 22px;
+  font-size: 24px;
+  background: linear-gradient(#001244, #000622);
+}
+
+.regional-dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+.regional-marker {
+  width: 7px;
+  height: 7px;
+  background: white;
+  border-radius: 50%;
+  margin: 0 auto 2px;
+}
+
+.regional-dot img {
+  width: 42px;
+  image-rendering: pixelated;
+  display: block;
+  margin: 0 auto;
+}
+
+.regional-temp {
+  color: #ffff00;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.regional-name {
+  color: white;
+  font-size: 20px;
+  line-height: 1;
+}

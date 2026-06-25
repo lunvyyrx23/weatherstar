@@ -1,0 +1,25 @@
+{
+  "name": "weatherstar",
+  "version": "1.0.0",
+  "description": "Clean WeatherSTAR 4000 rebuild",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lunvyyrx23/weatherstar.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lunvyyrx23/weatherstar/issues"
+  },
+  "homepage": "https://lunvyyrx23.github.io/weatherstar/",
+  "devDependencies": {
+    "vite": "^8.1.0"
+  }
+}
