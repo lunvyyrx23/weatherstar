@@ -1,5 +1,6 @@
-import { renderRegionalPage } from "./pages/regional.js";
 import "./style.css";
+import { renderCurrentPage } from "./pages/current.js";
+import { renderRegionalPage } from "./pages/regional.js";
 
 document.querySelector("#app").innerHTML = `
   <div id="topbar">
@@ -13,11 +14,7 @@ document.querySelector("#app").innerHTML = `
   <main id="screen">
     <div id="page-header">CURRENT<br>CONDITIONS</div>
 
-    <section id="page-current" class="page active">
-      <div id="cc-temp">84°</div>
-      <div id="cc-cond">Sunny</div>
-      <div id="cc-wind">Wind: SW 5 mph</div>
-    </section>
+    <section id="page-current" class="page active"></section>
 
     <section id="page-regional" class="page">
       <div id="regional-basemap"></div>
@@ -37,6 +34,7 @@ function showPage(pageName) {
   if (pageName === "current") {
     document.querySelector("#page-current").classList.add("active");
     document.querySelector("#page-header").innerHTML = "CURRENT<br>CONDITIONS";
+    renderCurrentPage();
   }
 
   if (pageName === "regional") {
@@ -53,3 +51,5 @@ document.querySelector("#current-btn").addEventListener("click", () => {
 document.querySelector("#regional-btn").addEventListener("click", () => {
   showPage("regional");
 });
+
+renderCurrentPage();
