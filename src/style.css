@@ -293,3 +293,48 @@ body.editor-on [data-edit-id].editor-selected {
   outline-offset: 4px;
   box-shadow: 0 0 14px rgba(255, 255, 0, 0.4);
 }
+
+#latest-table {
+  position: absolute;
+  left: 111px;
+  top: 172px;
+  width: 890px;
+  height: 589px;
+  color: white;
+  font-size: 44px;
+  line-height: 1;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+.latest-row {
+  display: grid;
+  grid-template-columns: 430px 90px 250px 150px;
+  column-gap: 8px;
+  align-items: center;
+  min-height: 64px;
+}
+
+.latest-station {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#latest-message {
+  position: absolute;
+  left: 185px;
+  top: 330px;
+  width: 720px;
+  color: #ffff00;
+  font-size: 44px;
+  text-align: center;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
