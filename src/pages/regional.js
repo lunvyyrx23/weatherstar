@@ -1,4 +1,5 @@
 import { cities, regionalDotOffsets } from "../map/cities.js";
+import { getIconPath } from "../utils/icons.js";
 
 const REGIONAL_BOUNDS = {
   north: 36.8,
@@ -29,7 +30,7 @@ function projectCity(city) {
   };
 }
 
-export function renderRegionalPage() {
+export function renderRegionalPage(weather) {
   const dots = document.querySelector("#regional-dots");
 
   dots.innerHTML = cities
@@ -37,10 +38,14 @@ export function renderRegionalPage() {
       const p = projectCity(city);
 
       return `
-        <div class="regional-dot" style="left:${p.x}px; top:${p.y}px;">
+        <div
+          class="regional-dot"
+          data-edit-id="reg-dot-${city.slug}"
+          style="left:${p.x}px; top:${p.y}px;"
+        >
           <div class="regional-marker"></div>
-          <img src="/icons/Sunny.gif" alt="" />
-          <div class="regional-temp">84°</div>
+          <img src="${getIconPath(weather.condition, weather.isDaytime)}" alt="" />
+          <div class="regional-temp">${weather.temp}°</div>
           <div class="regional-name">${city.name}</div>
         </div>
       `;

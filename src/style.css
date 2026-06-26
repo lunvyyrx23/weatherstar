@@ -99,9 +99,13 @@ button {
 
 #cc-cond {
   position: absolute;
-  top: 269px;
-  left: 217px;
+  left: 155px;
+  top: 270px;
+  width: 200px;
+  height: 35px;
   font-size: 30px;
+  text-align: center;
+  white-space: nowrap;
   text-shadow:
     -2px -2px 0 #000,
      2px -2px 0 #000,
@@ -111,9 +115,33 @@ button {
 
 #cc-wind {
   position: absolute;
-  top: 555px;
-  left: 124px;
-  font-size: 34px;
+  left: 127px;
+  top: 500px;
+  width: 299px;
+  height: 51px;
+  font-size: 45px;
+  color: white;
+  white-space: nowrap;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+#cc-stats {
+  position: absolute;
+  top: 251px;
+  left: 471px;
+  width: 470px;
+  height: 268px;
+  color: white;
+  font-size: 49px;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 18px;
+  row-gap: 12px;
+  align-content: start;
   text-shadow:
     -2px -2px 0 #000,
      2px -2px 0 #000,
@@ -193,4 +221,75 @@ button {
   color: white;
   font-size: 20px;
   line-height: 1;
+}
+
+#cc-icon {
+  position: absolute;
+  top: 301px;
+  left: 182px;
+  width: 149px;
+  image-rendering: pixelated;
+}
+
+#loc-name {
+  position: absolute;
+  top: 186px;
+  left: 459px;
+  color: #ffff00;
+  font-size: 49px;
+  width: 470px;
+  white-space: nowrap;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+#editor-panel {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: #090918;
+  border-bottom: 2px solid #1e1e44;
+  padding: 8px 14px;
+  color: white;
+}
+
+#editor-name {
+  color: #ffff00;
+  min-width: 120px;
+  font-size: 13px;
+}
+
+#editor-panel select,
+#editor-panel input {
+  background: #14142a;
+  color: white;
+  border: 1px solid #333366;
+  height: 28px;
+  padding: 0 6px;
+}
+
+#editor-panel input {
+  width: 70px;
+}
+
+#editor-panel label {
+  color: #aaa;
+  font-size: 12px;
+}
+
+body.editor-on [data-edit-id] {
+  pointer-events: auto !important;
+  cursor: move !important;
+  outline: 1px dashed rgba(255, 255, 0, 0.65);
+  outline-offset: 3px;
+}
+
+body.editor-on [data-edit-id].editor-selected {
+  outline: 2px solid #ffff00;
+  outline-offset: 4px;
+  box-shadow: 0 0 14px rgba(255, 255, 0, 0.4);
 }
