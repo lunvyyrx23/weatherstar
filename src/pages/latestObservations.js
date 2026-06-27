@@ -1,11 +1,11 @@
 import { normalizeCondition } from "../utils/icons.js";
+import { titleCase } from "../utils/text.js";
 
 function shortenCondition(condition) {
   return normalizeCondition(condition)
     .replace("Thunderstorm", "T-Storm")
     .replace("Mostly Cloudy", "M Cloudy")
-    .replace("Partly Cloudy", "P Cloudy")
-    .toUpperCase();
+    .replace("Partly Cloudy", "P Cloudy");
 }
 
 export function renderLatestObservationsPage(observations, status = "") {
@@ -14,7 +14,7 @@ export function renderLatestObservationsPage(observations, status = "") {
   if (!observations || observations.length === 0) {
     page.innerHTML = `
       <div id="latest-message" data-edit-id="latest-message">
-        ${status || "NO RECENT OBSERVATIONS"}
+        ${titleCase(status || "No Recent Observations")}
       </div>
     `;
     return;
@@ -24,10 +24,10 @@ export function renderLatestObservationsPage(observations, status = "") {
     .map(obs => {
       return `
         <div class="latest-row">
-          <div class="latest-station">${obs.stationName}</div>
+          <div class="latest-station">${titleCase(obs.stationName)}</div>
           <div>${obs.temp}</div>
-          <div>${shortenCondition(obs.condition)}</div>
-          <div>${obs.wind}</div>
+          <div>${titleCase(shortenCondition(obs.condition))}</div>
+          <div>${String(obs.wind || "--").toUpperCase()}</div>
         </div>
       `;
     })

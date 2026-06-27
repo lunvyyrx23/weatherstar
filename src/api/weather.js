@@ -1,3 +1,5 @@
+import { cleanStationDisplayName, cleanCityLabel } from "../utils/text.js";
+
 function fFromC(celsius) {
   if (celsius === null || celsius === undefined || Number.isNaN(celsius)) return null;
   return Math.round((celsius * 9) / 5 + 32);
@@ -97,7 +99,7 @@ function getFeelsLike(tempF, humidity, windMph) {
 
 function getCeiling(cloudLayers) {
   if (!Array.isArray(cloudLayers) || cloudLayers.length === 0) {
-    return "UNLM";
+    return "Unlimited";
   }
 
   const ceilingLayers = cloudLayers
@@ -109,10 +111,10 @@ function getCeiling(cloudLayers) {
     .filter(value => value !== null);
 
   if (!ceilingLayers.length) {
-    return "UNLM";
+    return "Unlimited";
   }
 
-  return `${Math.min(...ceilingLayers)} FT`;
+  return `${Math.min(...ceilingLayers)} Ft`;
 }
 
 function observationIsFresh(timestamp) {
@@ -125,7 +127,7 @@ function observationIsFresh(timestamp) {
 
   const ageMinutes = (now - obsTime) / 1000 / 60;
 
-  return ageMinutes >= 0 && ageMinutes <= 120;
+  return ageMinutes >= 0 && ageMinutes <= 180;
 }
 
 async function fetchJson(url) {
@@ -197,13 +199,13 @@ async function getBestLatestObservation(stationsUrl) {
           visibility:
             visibilityMiles !== null ? `${visibilityMiles.toFixed(1)} mi.` : "--",
           pressure:
-            pressureInHg !== null ? `${pressureInHg.toFixed(2)} IN` : "--",
+            pressureInHg !== null ? `${pressureInHg.toFixed(2)} in` : "--",
           feelsLabel: feels.label,
           feelsValue: feels.value
         }
       };
     } catch {
-      // Try the next nearby station.
+      // Try next station.
     }
   }
 
@@ -225,6 +227,10 @@ export async function getWeatherForCoords(lat, lon, label = "Unknown") {
     return {
       source: "observation",
       location: label,
+      displayLocation: cleanStationDisplayName(
+        observation.stationName,
+        observation.stationId
+      ),
       coords: { lat, lon },
       stationsUrl,
       stationId: observation.stationId,
@@ -242,6 +248,7 @@ export async function getWeatherForCoords(lat, lon, label = "Unknown") {
   return {
     source: "forecast-fallback",
     location: label,
+    displayLocation: cleanCityLabel(label),
     coords: { lat, lon },
     stationsUrl,
     stationId: null,

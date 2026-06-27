@@ -2,9 +2,12 @@ import "./style.css";
 import { geocodeLocation } from "./api/geocode.js";
 import { getWeatherForCoords } from "./api/weather.js";
 import { getLatestObservations } from "./api/observations.js";
+import { getRegionalWeather } from "./api/regionalWeather.js";
+
 import { renderCurrentPage } from "./pages/current.js";
-import { renderRegionalPage } from "./pages/regional.js";
 import { renderLatestObservationsPage } from "./pages/latestObservations.js";
+import { renderRegionalPage } from "./pages/regional.js";
+
 import { initEditor, refreshEditorTargets } from "./ui/editor.js";
 
 let appState = {
@@ -28,7 +31,9 @@ let appState = {
     }
   },
   observations: [],
-  observationsStatus: "LOADING OBSERVATIONS..."
+  observationsStatus: "LOADING OBSERVATIONS...",
+  regionalWeather: [],
+  regionalStatus: "LOADING REGIONAL..."
 };
 
 document.querySelector("#app").innerHTML = `
@@ -62,7 +67,9 @@ document.querySelector("#app").innerHTML = `
   </div>
 
   <main id="screen">
-    <div id="page-header" data-edit-id="page-header">CURRENT<br>CONDITIONS</div>
+    <div id="page-header" data-edit-id="page-header">
+      Current<br>Conditions
+    </div>
 
     <section id="page-current" class="page active"></section>
 
@@ -74,7 +81,9 @@ document.querySelector("#app").innerHTML = `
       <div id="regional-frame" data-edit-id="regional-frame"></div>
     </section>
 
-    <div id="bottom-banner" data-edit-id="bottom-banner">WeatherSTAR 4000+</div>
+    <div id="bottom-banner" data-edit-id="bottom-banner">
+      WeatherSTAR 4000+
+    </div>
   </main>
 `;
 
@@ -85,50 +94,26 @@ function showPage(pageName) {
 
   if (pageName === "current") {
     document.querySelector("#page-current").classList.add("active");
-    document.querySelector("#page-header").innerHTML = "CURRENT<br>CONDITIONS";
+    document.querySelector("#page-header").innerHTML = "Current<br>Conditions";
     renderCurrentPage(appState.weather);
-    refreshEditorTargets();
   }
 
   if (pageName === "latest") {
     document.querySelector("#page-latest").classList.add("active");
-    document.querySelector("#page-header").innerHTML = "LATEST<br>OBSERVATIONS";
-    renderLatestObservationsPage(appState.observations, appState.observationsStatus);
-    refreshEditorTargets();
+document.querySelector("#page-header").innerHTML = "Latest<br>Observations";
+    renderLatestObservationsPage(
+      appState.observations,
+      appState.observationsStatus
+    );
   }
 
   if (pageName === "regional") {
     document.querySelector("#page-regional").classList.add("active");
     document.querySelector("#page-header").innerHTML = "REGIONAL<br>OBSERVATIONS";
-    renderRegionalPage(appState.weather);
-    refreshEditorTargets();
-  }
-}
-
-async function loadLatestObservations() {
-  appState.observationsStatus = "LOADING OBSERVATIONS...";
-
-  if (document.querySelector("#page-latest").classList.contains("active")) {
-    renderLatestObservationsPage(appState.observations, appState.observationsStatus);
-    refreshEditorTargets();
+    renderRegionalPage(appState.regionalWeather, appState.regionalStatus);
   }
 
-  try {
-    const observations = await getLatestObservations(appState.weather.stationsUrl, 8);
-
-    appState.observations = observations;
-    appState.observationsStatus =
-      observations.length > 0 ? "" : "NO RECENT OBSERVATIONS";
-  } catch (error) {
-    console.error(error);
-    appState.observations = [];
-    appState.observationsStatus = "OBSERVATIONS UNAVAILABLE";
-  }
-
-  if (document.querySelector("#page-latest").classList.contains("active")) {
-    renderLatestObservationsPage(appState.observations, appState.observationsStatus);
-    refreshEditorTargets();
-  }
+  refreshEditorTargets();
 }
 
 async function updateWeather() {
@@ -154,6 +139,53 @@ async function updateWeather() {
   }
 }
 
+async function loadLatestObservations() {
+  try {
+    const observations = await getLatestObservations(
+      appState.weather.stationsUrl,
+      8
+    );
+
+    appState.observations = observations;
+    appState.observationsStatus =
+      observations.length > 0 ? "" : "NO RECENT OBSERVATIONS";
+  } catch (error) {
+    console.error(error);
+    appState.observations = [];
+    appState.observationsStatus = "OBSERVATIONS UNAVAILABLE";
+  }
+
+ if (pageName === "latest") {
+  document.querySelector("#page-latest").classList.add("active");
+  document.querySelector("#page-header").innerHTML = "Latest<br>Observations";
+  document.querySelector("#bottom-banner").textContent = "Latest Observations";
+  renderLatestObservationsPage(
+    appState.observations,
+    appState.observationsStatus
+  );
+}
+
+if (pageName === "regional") {
+  document.querySelector("#page-regional").classList.add("active");
+  document.querySelector("#page-header").innerHTML = "Regional<br>Observations";
+  document.querySelector("#bottom-banner").textContent = "Regional Observations";
+  renderRegionalPage(appState.regionalWeather, appState.regionalStatus);
+}
+
+  try {
+    const regionalWeather = await getRegionalWeather();
+
+    appState.regionalWeather = regionalWeather;
+    appState.regionalStatus = "";
+  } catch (error) {
+    console.error(error);
+    appState.regionalWeather = [];
+    appState.regionalStatus = "REGIONAL UNAVAILABLE";
+  }
+
+  showPage("regional");
+}
+
 document.querySelector("#current-btn").addEventListener("click", () => {
   showPage("current");
 });
@@ -163,7 +195,7 @@ document.querySelector("#latest-btn").addEventListener("click", () => {
 });
 
 document.querySelector("#regional-btn").addEventListener("click", () => {
-  showPage("regional");
+  loadRegionalWeather();
 });
 
 document.querySelector("#update-btn").addEventListener("click", () => {
@@ -172,6 +204,9 @@ document.querySelector("#update-btn").addEventListener("click", () => {
 
 renderCurrentPage(appState.weather);
 renderLatestObservationsPage(appState.observations, appState.observationsStatus);
+renderRegionalPage(appState.regionalWeather, appState.regionalStatus);
+
 initEditor();
 refreshEditorTargets();
+
 updateWeather();

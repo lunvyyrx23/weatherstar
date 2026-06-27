@@ -30,12 +30,33 @@ function projectCity(city) {
   };
 }
 
-export function renderRegionalPage(weather) {
+function formatTemp(temp) {
+  if (temp === null || temp === undefined || temp === "--") return "--";
+  return `${temp}°`;
+}
+
+export function renderRegionalPage(regionalWeather = [], status = "") {
   const dots = document.querySelector("#regional-dots");
+
+  if (!dots) return;
+
+  const weatherBySlug = new Map();
+
+  if (Array.isArray(regionalWeather)) {
+    regionalWeather.forEach(item => {
+      weatherBySlug.set(item.slug, item);
+    });
+  }
 
   dots.innerHTML = cities
     .map(city => {
       const p = projectCity(city);
+
+      const weather = weatherBySlug.get(city.slug) || {
+        temp: "--",
+        condition: "Cloudy",
+        isDaytime: true
+      };
 
       return `
         <div
@@ -45,10 +66,18 @@ export function renderRegionalPage(weather) {
         >
           <div class="regional-marker"></div>
           <img src="${getIconPath(weather.condition, weather.isDaytime)}" alt="" />
-          <div class="regional-temp">${weather.temp}°</div>
+          <div class="regional-temp">${formatTemp(weather.temp)}</div>
           <div class="regional-name">${city.name}</div>
         </div>
       `;
     })
     .join("");
+
+  if (status) {
+    dots.innerHTML += `
+      <div id="regional-status" data-edit-id="regional-status">
+        ${status}
+      </div>
+    `;
+  }
 }
