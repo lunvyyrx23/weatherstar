@@ -1,0 +1,435 @@
+import * as maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import "../styles/regional.css";
+
+const MAPTILER_STYLE_URL = "https://api.maptiler.com/maps/019fe1fa-e820-78cd-bccf-a2a78e5f39b3/style.json?key=QRGMpkBK0zW3yFgMjeJk";
+
+const VIEW_EW_MILES = 603;
+const VIEW_NS_MILES = 426;
+const HALF_VIEW_EW_MILES = VIEW_EW_MILES / 2;
+const HALF_VIEW_NS_MILES = VIEW_NS_MILES / 2;
+const MILES_PER_LAT = 69;
+
+let map = null;
+let currentCities = [];
+let selectedCity = null;
+
+const cities = [
+  { name: "Atlanta", lat: 33.7490, lon: -84.3880 },
+  { name: "Augusta", lat: 33.4735, lon: -82.0105 },
+  { name: "Athens", lat: 33.9519, lon: -83.3576 },
+  { name: "Macon", lat: 32.8407, lon: -83.6324 },
+  { name: "Savannah", lat: 32.0809, lon: -81.0912 },
+  { name: "Columbus", lat: 32.4610, lon: -84.9877 },
+  { name: "Columbia", lat: 34.0007, lon: -81.0348 },
+  { name: "Charleston", lat: 32.7765, lon: -79.9311 },
+  { name: "Greenville", lat: 34.8526, lon: -82.3940 },
+  { name: "Myrtle Beach", lat: 33.6891, lon: -78.8867 },
+  { name: "Charlotte", lat: 35.2271, lon: -80.8431 },
+  { name: "Raleigh", lat: 35.7796, lon: -78.6382 },
+  { name: "Wilmington", lat: 34.2104, lon: -77.8868 },
+  { name: "Knoxville", lat: 35.9606, lon: -83.9207 },
+  { name: "Chattanooga", lat: 35.0456, lon: -85.3097 },
+  { name: "Birmingham", lat: 33.5186, lon: -86.8104 },
+  { name: "Montgomery", lat: 32.3668, lon: -86.3000 },
+  { name: "Jacksonville", lat: 30.3322, lon: -81.6557 },
+  { name: "Tallahassee", lat: 30.4383, lon: -84.2807 },
+  { name: "Pensacola", lat: 30.4213, lon: -87.2169 },
+  { name: "Gainesville", lat: 29.6516, lon: -82.3248 },
+  { name: "Ocala", lat: 29.1872, lon: -82.1401 },
+  { name: "Daytona Beach", lat: 29.2108, lon: -81.0228 },
+  { name: "Orlando", lat: 28.5383, lon: -81.3792 },
+  { name: "Tampa", lat: 27.9506, lon: -82.4572 },
+  { name: "St. Petersburg", lat: 27.7676, lon: -82.6403 },
+  { name: "Sarasota", lat: 27.3364, lon: -82.5307 },
+  { name: "Fort Myers", lat: 26.6406, lon: -81.8723 },
+  { name: "Port St. Lucie", lat: 27.2730, lon: -80.3582 },
+  { name: "West Palm Beach", lat: 26.7153, lon: -80.0534 },
+  { name: "Fort Lauderdale", lat: 26.1224, lon: -80.1373 },
+  { name: "Miami", lat: 25.7617, lon: -80.1918 },
+  { name: "Key West", lat: 24.5551, lon: -81.7800 },
+  { name: "New Orleans", lat: 29.9511, lon: -90.0715 },
+  { name: "Mobile", lat: 30.6954, lon: -88.0399 },
+  { name: "Memphis", lat: 35.1495, lon: -90.0490 },
+  { name: "Nashville", lat: 36.1627, lon: -86.7816 },
+  { name: "Richmond", lat: 37.5407, lon: -77.4360 },
+  { name: "Norfolk", lat: 36.8508, lon: -76.2859 },
+  { name: "Washington DC", lat: 38.9072, lon: -77.0369 }
+];
+
+function getPage() {
+  let page =
+    document.getElementById("page-regional") ||
+    document.querySelector("[data-page='regional']") ||
+    document.querySelector(".page-regional") ||
+    document.querySelector(".regional-page");
+
+  if (!page) {
+    const screen =
+      document.getElementById("screen") ||
+      document.getElementById("scr") ||
+      document.querySelector(".screen") ||
+      document.body;
+
+    page = document.createElement("div");
+    page.id = "page-regional";
+    page.className = "page active";
+    screen.appendChild(page);
+  }
+
+  return page;
+}
+
+function milesPerLon(lat) {
+  return Math.cos(lat * Math.PI / 180) * 69;
+}
+
+function getBounds(center) {
+  const latRange = HALF_VIEW_NS_MILES / MILES_PER_LAT;
+  const lonRange = HALF_VIEW_EW_MILES / milesPerLon(center.lat);
+
+  return {
+    minLat: center.lat - latRange,
+    maxLat: center.lat + latRange,
+    minLon: center.lon - lonRange,
+    maxLon: center.lon + lonRange
+  };
+}
+
+function formatCityName(name) {
+  return String(name || "")
+    .split(" ")
+    .map(part => {
+      const lower = part.toLowerCase();
+      if (lower === "dc") return "DC";
+      if (lower === "st.") return "St.";
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(" ");
+}
+
+function fakeTemp(city) {
+  const seed = Math.abs(Math.round(city.lat * 10) + Math.round(city.lon * 10) + city.name.length);
+  return 72 + (seed % 17);
+}
+
+function loadSettings() {
+  const saved = JSON.parse(localStorage.getItem("wsRegionalEditor") || "{}");
+
+  return {
+    tempFont: saved.tempFont || "Star4000",
+    nameFont: saved.nameFont || "Star4000Extended",
+    tempSize: saved.tempSize ?? 35,
+    nameSize: saved.nameSize ?? 20,
+    labelGap: saved.labelGap ?? 2,
+    dotSpacing: saved.dotSpacing ?? 129,
+    tempLetterSpacing: saved.tempLetterSpacing ?? 0,
+    nameLetterSpacing: saved.nameLetterSpacing ?? 0,
+    textBlur: saved.textBlur ?? 0.55
+  };
+}
+
+function saveSettings(settings) {
+  localStorage.setItem("wsRegionalEditor", JSON.stringify(settings));
+}
+
+function applySettings() {
+  const settings = loadSettings();
+  const root = document.documentElement;
+
+  root.style.setProperty("--regional-temp-font", `"${settings.tempFont}"`);
+  root.style.setProperty("--regional-name-font", `"${settings.nameFont}"`);
+  root.style.setProperty("--regional-temp-size", settings.tempSize + "px");
+  root.style.setProperty("--regional-name-size", settings.nameSize + "px");
+  root.style.setProperty("--regional-gap", settings.labelGap + "px");
+  root.style.setProperty("--regional-temp-letter", settings.tempLetterSpacing + "px");
+  root.style.setProperty("--regional-name-letter", settings.nameLetterSpacing + "px");
+  root.style.setProperty("--regional-text-blur", settings.textBlur + "px");
+}
+
+async function geocodeLocation(place) {
+  const url =
+    "https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=" +
+    encodeURIComponent(place);
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.results || !data.results.length) {
+    return { name: "Augusta", lat: 33.4735, lon: -82.0105 };
+  }
+
+  return {
+    name: data.results[0].name,
+    lat: data.results[0].latitude,
+    lon: data.results[0].longitude
+  };
+}
+
+function getCitiesInsideArea(center) {
+  const bounds = getBounds(center);
+
+  const inside = cities.filter(city =>
+    city.lat >= bounds.minLat &&
+    city.lat <= bounds.maxLat &&
+    city.lon >= bounds.minLon &&
+    city.lon <= bounds.maxLon
+  );
+
+  const centerName = formatCityName(center.name || "Selected");
+  const selected = {
+    name: centerName,
+    lat: center.lat,
+    lon: center.lon,
+    selected: true
+  };
+
+  const alreadyIncluded = inside.some(city =>
+    city.name.toLowerCase() === centerName.toLowerCase()
+  );
+
+  if (!alreadyIncluded) inside.unshift(selected);
+
+  return inside;
+}
+
+function drawDots() {
+  const dots = document.getElementById("regional-dots");
+  if (!dots || !map) return;
+
+  const settings = loadSettings();
+  const projected = currentCities
+    .map(city => ({
+      ...city,
+      point: map.project([city.lon, city.lat])
+    }))
+    .filter(city =>
+      Number.isFinite(city.point.x) &&
+      Number.isFinite(city.point.y) &&
+      city.point.x >= -80 &&
+      city.point.x <= 1170 &&
+      city.point.y >= 55 &&
+      city.point.y <= 775
+    );
+
+  const kept = [];
+
+  for (const city of projected) {
+    const tooClose = kept.some(other => {
+      const dx = city.point.x - other.point.x;
+      const dy = city.point.y - other.point.y;
+      return Math.sqrt(dx * dx + dy * dy) < settings.dotSpacing;
+    });
+
+    if (!tooClose || city.selected) kept.push(city);
+  }
+
+  dots.innerHTML = kept.map(city => `
+    <div
+      class="regional-dot ${city.selected ? "selected-dot" : ""}"
+      data-city="${formatCityName(city.name)}"
+      style="left:${Math.round(city.point.x)}px; top:${Math.round(city.point.y)}px;"
+    >
+      <div class="regional-temp">${fakeTemp(city)}°</div>
+      <div class="regional-name">${formatCityName(city.name)}</div>
+    </div>
+  `).join("");
+}
+
+async function showArea(place) {
+  const chosenPlace =
+    place ||
+    document.getElementById("regional-search")?.value ||
+    document.getElementById("city-input")?.value ||
+    "Augusta, GA";
+
+  const center = await geocodeLocation(chosenPlace);
+  selectedCity = center;
+
+  const bounds = getBounds(center);
+  currentCities = getCitiesInsideArea(center);
+
+  map.fitBounds(
+    [
+      [bounds.minLon, bounds.minLat],
+      [bounds.maxLon, bounds.maxLat]
+    ],
+    { padding: 0, duration: 0 }
+  );
+
+  setTimeout(drawDots, 250);
+}
+
+function createEditor() {
+  const settings = loadSettings();
+
+  const editor = document.getElementById("regional-editor");
+  if (!editor) return;
+
+  editor.innerHTML = `
+    <div class="title">Regional Editor</div>
+
+    <label>Location
+      <input id="regional-search" value="${document.getElementById("city-input")?.value || "Augusta, GA"}">
+    </label>
+
+    <button id="regional-go">Load Area</button>
+
+    <label>Temp font
+      <select id="regional-temp-font">
+        <option>Star4000</option>
+        <option>Star4000Extended</option>
+        <option>Star4000Large</option>
+        <option>Star4000LargeCompressed</option>
+      </select>
+    </label>
+
+    <label>City font
+      <select id="regional-name-font">
+        <option>Star4000Extended</option>
+        <option>Star4000</option>
+        <option>Star4000Large</option>
+        <option>Star4000LargeCompressed</option>
+      </select>
+    </label>
+
+    <label>Temp size
+      <input id="regional-temp-size" type="range" min="20" max="80" value="${settings.tempSize}">
+    </label>
+
+    <label>City size
+      <input id="regional-name-size" type="range" min="12" max="60" value="${settings.nameSize}">
+    </label>
+
+    <label>Temp/name gap
+      <input id="regional-gap" type="range" min="-20" max="30" value="${settings.labelGap}">
+    </label>
+
+    <label>Dot spacing
+      <input id="regional-dot-spacing" type="range" min="60" max="260" value="${settings.dotSpacing}">
+    </label>
+
+    <label>Temp letter spacing
+      <input id="regional-temp-letter" type="range" min="-4" max="12" step="0.5" value="${settings.tempLetterSpacing}">
+    </label>
+
+    <label>City letter spacing
+      <input id="regional-name-letter" type="range" min="-4" max="12" step="0.5" value="${settings.nameLetterSpacing}">
+    </label>
+
+    <label>Whole text blur
+      <input id="regional-text-blur" type="range" min="0" max="1.5" step="0.05" value="${settings.textBlur}">
+    </label>
+
+    <button id="regional-export">Export Settings</button>
+  `;
+
+  document.getElementById("regional-temp-font").value = settings.tempFont;
+  document.getElementById("regional-name-font").value = settings.nameFont;
+
+  function update(prop, value, numeric = true) {
+    const next = loadSettings();
+    next[prop] = numeric ? Number(value) : value;
+    saveSettings(next);
+    applySettings();
+    drawDots();
+  }
+
+  document.getElementById("regional-go").addEventListener("click", () => {
+    showArea(document.getElementById("regional-search").value);
+  });
+
+  document.getElementById("regional-temp-font").addEventListener("change", e => update("tempFont", e.target.value, false));
+  document.getElementById("regional-name-font").addEventListener("change", e => update("nameFont", e.target.value, false));
+  document.getElementById("regional-temp-size").addEventListener("input", e => update("tempSize", e.target.value));
+  document.getElementById("regional-name-size").addEventListener("input", e => update("nameSize", e.target.value));
+  document.getElementById("regional-gap").addEventListener("input", e => update("labelGap", e.target.value));
+  document.getElementById("regional-dot-spacing").addEventListener("input", e => update("dotSpacing", e.target.value));
+  document.getElementById("regional-temp-letter").addEventListener("input", e => update("tempLetterSpacing", e.target.value));
+  document.getElementById("regional-name-letter").addEventListener("input", e => update("nameLetterSpacing", e.target.value));
+  document.getElementById("regional-text-blur").addEventListener("input", e => update("textBlur", e.target.value));
+
+  document.getElementById("regional-export").addEventListener("click", () => {
+    const visibleDots = Array.from(document.querySelectorAll(".regional-dot")).map(dot => ({
+      city: dot.dataset.city,
+      left: dot.style.left,
+      top: dot.style.top,
+      temp: dot.querySelector(".regional-temp")?.textContent || "",
+      name: dot.querySelector(".regional-name")?.textContent || ""
+    }));
+
+    const data = {
+      exportedAt: new Date().toISOString(),
+      project: "WeatherSTAR Regional Page",
+      settings: loadSettings(),
+      visibleDots
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "weatherstar-regional-page-settings.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+
+async function initRegionalMap() {
+  const mapBox = document.getElementById("regional-basemap");
+  if (!mapBox) return;
+
+  if (map) {
+    map.remove();
+    map = null;
+  }
+
+  map = new maplibregl.Map({
+    container: "regional-basemap",
+    style: MAPTILER_STYLE_URL,
+    center: [-82.0105, 33.4735],
+    zoom: 6,
+    interactive: false,
+    attributionControl: false
+  });
+
+  map.on("load", () => showArea());
+  map.on("moveend", drawDots);
+}
+
+export function renderRegionalPage() {
+  const page = getPage();
+
+  page.style.position = "absolute";
+  page.style.inset = "0";
+  page.style.width = "1091px";
+  page.style.height = "820px";
+  page.style.display = "block";
+  page.style.overflow = "hidden";
+  page.style.background = "#001244";
+
+  page.innerHTML = `
+    <div id="regional-basemap"></div>
+
+    <div id="regional-frame">
+      <img id="regional-frame-img" src="/bg/ws4000wherediditgo.png" alt="">
+    </div>
+
+    <div id="regional-dots"></div>
+
+    <div id="regional-editor"></div>
+  `;
+
+  applySettings();
+  createEditor();
+  initRegionalMap();
+}
+
+export function renderRegional() {
+  renderRegionalPage();
+}
+
+export function initRegional() {
+  renderRegionalPage();
+}
+
+export default renderRegionalPage;

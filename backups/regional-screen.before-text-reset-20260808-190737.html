@@ -1,0 +1,1220 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>WeatherSTAR Regional Dots</title>
+
+    <style>
+      html, body {
+        margin: 0;
+        background: #0a0a0a;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+
+      #controls {
+        padding: 12px;
+        background: black;
+        text-align: center;
+      }
+
+      #locationInput {
+        width: 260px;
+        padding: 8px;
+        font-size: 16px;
+      }
+
+      #goBtn {
+        padding: 8px 14px;
+        font-size: 16px;
+      }
+
+      #status {
+        margin-left: 12px;
+        color: yellow;
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      #screen {
+        position: relative;
+        width: 1091px;
+        height: 820px;
+        margin: 10px auto;
+        background: #001244;
+        border: none;
+        overflow: hidden;
+      }
+
+      #map,
+      #dots {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1091px;
+        height: 820px;
+      }
+
+      #map {
+        z-index: 1;
+      }
+
+      #dots {
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      .city-dot {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        font-weight: bold;
+        text-shadow: none !important;
+        pointer-events: none;
+      }
+
+      .marker {
+        width: 9px;
+        height: 9px;
+        background: white;
+        border: 2px solid black;
+        border-radius: 50%;
+        margin: 0;
+      }
+
+      .temp {
+        font-size: 22px;
+        line-height: 25px;
+      }
+
+      .name {
+        font-size: 16px;
+        line-height: 18px;
+        white-space: nowrap;
+      }
+
+      .maplibregl-control-container {
+        display: none !important;
+      }
+          .marker {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+      }
+
+      #screen {
+        position: relative !important;
+        width: 1091px !important;
+        height: 820px !important;
+        margin: 10px auto !important;
+        overflow: hidden !important;
+        background: #001244 !important;
+        border: none !important;
+        box-shadow: 0 14px 44px rgba(0,0,0,.65) !important;
+      }
+
+      #map {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 1091px !important;
+        height: 820px !important;
+        z-index: 1 !important;
+      }
+
+      #weatherstarFrame {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 1091px !important;
+        height: 820px !important;
+        z-index: 50 !important;
+        pointer-events: none !important;
+      }
+
+      #weatherstarFrame img {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 1091px !important;
+        height: 820px !important;
+        pointer-events: none !important;
+      }
+
+      #dots {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 1091px !important;
+        height: 820px !important;
+        z-index: 100 !important;
+        pointer-events: none !important;
+      }
+
+      .maplibregl-control-container {
+        display: none !important;
+      }
+
+      @font-face {
+        font-family: "Star4000";
+        src: url("/fonts/Star4000.ttf") format("truetype");
+      }
+
+      @font-face {
+        font-family: "Star4000Large";
+        src: url("/fonts/Star4000Large.ttf") format("truetype");
+      }
+
+      @font-face {
+        font-family: "Star4000LargeCompressed";
+        src: url("/fonts/Star4000LargeCompressed.ttf") format("truetype");
+      }
+
+      .city-dot,
+      .temp,
+      .name {
+        font-family: "Star4000LargeCompressed", "Star4000Large", "Star4000", monospace !important;
+      }
+
+      @font-face {
+        font-family: "Star4000Extended";
+        src: url("/fonts/Star4000Extended.ttf") format("truetype");
+      }
+
+      .city-dot,
+      .temp,
+      .name {
+        font-family: "Star4000Extended", monospace !important;
+        font-weight: normal !important;
+      }
+
+      @font-face {
+        font-family: "Star4000Extended";
+        src: url("/fonts/Star4000Extended.ttf") format("truetype");
+      }
+
+      .city-dot,
+      .temp,
+      .name {
+        font-family: "Star4000Extended", monospace !important;
+        font-weight: normal !important;
+      }
+/* DOT EDITOR CSS START */
+
+      @font-face {
+        font-family: "Star4000";
+        src: url("/fonts/Star4000.ttf") format("truetype");
+      }
+
+      @font-face {
+        font-family: "Star4000Extended";
+        src: url("/fonts/Star4000Extended.ttf") format("truetype");
+      }
+
+      @font-face {
+        font-family: "Star4000Large";
+        src: url("/fonts/Star4000Large.ttf") format("truetype");
+      }
+
+      @font-face {
+        font-family: "Star4000LargeCompressed";
+        src: url("/fonts/Star4000LargeCompressed.ttf") format("truetype");
+      }
+
+      @font-face {
+        font-family: "Star4000Radar";
+        src: url("/fonts/Star4000Radar.ttf") format("truetype");
+      }
+
+      :root {
+        --dot-temp-font: "Star4000Extended";
+        --dot-name-font: "Star4000Extended";
+        --dot-temp-size: 54px;
+        --dot-name-size: 34px;
+        --dot-temp-line: 48px;
+        --dot-name-line: 32px;
+        --dot-label-gap: -2px;
+      }
+
+      #dots {
+        pointer-events: auto !important;
+      }
+
+      .city-dot {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+      }
+
+      .city-dot .temp,
+      .temp {
+        font-family: var(--dot-temp-font), monospace !important;
+        font-size: var(--dot-temp-size) !important;
+        line-height: var(--dot-temp-line) !important;
+        margin-bottom: var(--dot-label-gap) !important;
+        font-weight: normal !important;
+      }
+
+      .city-dot .name,
+      .name {
+        font-family: var(--dot-name-font), monospace !important;
+        font-size: var(--dot-name-size) !important;
+        line-height: var(--dot-name-line) !important;
+        font-weight: normal !important;
+      }
+
+      .city-dot.selected-dot {
+        outline: 2px dashed #ffff00;
+        outline-offset: 8px;
+      }
+
+      #dotEditor {
+        position: fixed;
+        right: 12px;
+        top: 62px;
+        z-index: 9999;
+        width: 245px;
+        background: rgba(0,0,0,.88);
+        border: 2px solid #ffff00;
+        color: white;
+        padding: 10px;
+        font-family: Arial, sans-serif !important;
+        font-size: 13px;
+      }
+
+      #dotEditor * {
+        font-family: Arial, sans-serif !important;
+      }
+
+      #dotEditor .title {
+        color: #ffff00;
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      #dotEditor label {
+        display: block;
+        margin-top: 8px;
+      }
+
+      #dotEditor select,
+      #dotEditor input {
+        width: 100%;
+        margin-top: 3px;
+      }
+
+      #selectedDotName {
+        color: #ffff00;
+        font-weight: bold;
+      }
+
+/* DOT EDITOR CSS END */
+      .city-dot .temp,
+      .temp {
+        letter-spacing: var(--dot-temp-letter-spacing, 0px) !important;
+      }
+
+      .city-dot .name,
+      .name {
+        letter-spacing: var(--dot-name-letter-spacing, 0px) !important;
+      }
+
+      
+
+      
+
+      
+
+      .city-dot .name {
+        color: #ffffff !important;
+        line-height: 1 !important;
+        text-transform: none !important;
+      }
+
+
+      
+      
+      
+      
+      
+      /* ORIGINAL-STYLE REGIONAL TEXT OUTLINE */
+      .city-dot {
+        text-shadow:
+          -2px -2px 0 #000,
+           2px -2px 0 #000,
+          -2px  2px 0 #000,
+           2px  2px 0 #000 !important;
+      }
+
+      .city-dot .temp,
+      .city-dot .name {
+        display: block !important;
+        font-weight: normal !important;
+        filter: blur(0.55px) !important;
+        -webkit-text-stroke: 0 transparent !important;
+        paint-order: normal !important;
+        text-shadow: inherit !important;
+        text-transform: none !important;
+        line-height: 1 !important;
+      }
+
+      .city-dot .temp {
+        color: #ffff00 !important;
+        font-family: var(--dot-temp-font, "Star4000"), monospace !important;
+        font-size: var(--dot-temp-size, 35px) !important;
+        letter-spacing: var(--dot-temp-letter-spacing, 0px) !important;
+      }
+
+      .city-dot .name {
+        color: #ffffff !important;
+        font-family: var(--dot-name-font, "Star4000Extended"), monospace !important;
+        font-size: var(--dot-name-size, 20px) !important;
+        letter-spacing: var(--dot-name-letter-spacing, 0px) !important;
+        text-transform: none !important;
+      }
+
+      
+      /* HIDE TEST SEARCH AND EDITOR UI */
+      #dotEditor,
+      #regional-editor,
+      #editor-panel,
+      #controls,
+      .controls,
+      #searchBar,
+      .search-bar,
+      #topbar,
+      #status,
+      #goBtn,
+      #locationInput,
+      #placeInput,
+      #searchInput,
+      #cityInput,
+      #city-input {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+
+      body {
+        margin: 0 !important;
+        background: #000 !important;
+        overflow: hidden !important;
+      }
+
+      #screen,
+      #scr,
+      .screen {
+        margin: 0 auto !important;
+      }
+
+      /* MAIN PROJECT EMBED CLEANUP */
+      #dotEditor,
+      #regional-editor,
+      #editor-panel,
+      #controls,
+      .controls,
+      #searchBar,
+      .search-bar,
+      #topbar,
+      #status,
+      #goBtn,
+      #locationInput,
+      #placeInput,
+      #searchInput,
+      #cityInput,
+      #city-input {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 1091px !important;
+        height: 820px !important;
+        overflow: hidden !important;
+        background: #000 !important;
+      }
+
+      #screen,
+      #scr,
+      .screen {
+        margin: 0 !important;
+        left: 0 !important;
+        top: 0 !important;
+      }
+
+      
+      
+      /* REGIONAL LAYER HIDE FIX */
+      #map,
+      #regional-basemap {
+        z-index: 1 !important;
+      }
+
+      #dots,
+      #regional-dots {
+        z-index: 40 !important;
+        pointer-events: none !important;
+      }
+
+      .city-dot,
+      .regional-dot {
+        z-index: 40 !important;
+      }
+
+      #frame,
+      #regional-frame,
+      #regional-frame-img,
+      img[src*="ws4000wherediditgo"] {
+        z-index: 150 !important;
+        pointer-events: none !important;
+      }
+
+      #bottom-banner {
+        z-index: 300 !important;
+        pointer-events: none !important;
+      }
+</style>
+  </head>
+
+  <body>
+    <div id="controls">
+      <input id="locationInput" value="Augusta, GA" />
+      <button id="goBtn">Show Area</button>
+      <span id="status">Loading map...</span>
+    </div>
+
+    <div id="screen">
+      <div id="map"></div>
+      <div id="weatherstarFrame">
+        <img src="/bg/ws4000wherediditgo.png" />
+      </div>
+      <div id="weatherstarFrame">
+        <img src="/bg/ws4000wherediditgo.png" />
+      </div>
+      <div id="dots"></div>
+    </div>
+
+    <script type="module">
+      const MAPTILER_JSON_URL = "https://api.maptiler.com/maps/019fe1fa-e820-78cd-bccf-a2a78e5f39b3/style.json?key=QRGMpkBK0zW3yFgMjeJk";
+
+      const status = document.getElementById("status");
+      const dots = document.getElementById("dots");
+
+      const VIEW_MILES = 450;
+      const HALF_VIEW_MILES = VIEW_MILES / 2;
+      const MILES_PER_LAT = 69;
+      const MAX_DOTS = 9999;
+
+      const cities = [
+        { name: "NEW YORK", lat: 40.7128, lon: -74.0060 },
+        { name: "LOS ANGELES", lat: 34.0522, lon: -118.2437 },
+        { name: "CHICAGO", lat: 41.8781, lon: -87.6298 },
+        { name: "HOUSTON", lat: 29.7604, lon: -95.3698 },
+        { name: "PHOENIX", lat: 33.4484, lon: -112.0740 },
+        { name: "PHILADELPHIA", lat: 39.9526, lon: -75.1652 },
+        { name: "SAN ANTONIO", lat: 29.4241, lon: -98.4936 },
+        { name: "SAN DIEGO", lat: 32.7157, lon: -117.1611 },
+        { name: "DALLAS", lat: 32.7767, lon: -96.7970 },
+        { name: "SAN JOSE", lat: 37.3382, lon: -121.8863 },
+        { name: "AUSTIN", lat: 30.2672, lon: -97.7431 },
+        { name: "FORT WORTH", lat: 32.7555, lon: -97.3308 },
+        { name: "COLUMBUS", lat: 39.9612, lon: -82.9988 },
+        { name: "CHARLOTTE", lat: 35.2271, lon: -80.8431 },
+        { name: "INDIANAPOLIS", lat: 39.7684, lon: -86.1581 },
+        { name: "SAN FRANCISCO", lat: 37.7749, lon: -122.4194 },
+        { name: "SEATTLE", lat: 47.6062, lon: -122.3321 },
+        { name: "DENVER", lat: 39.7392, lon: -104.9903 },
+        { name: "OKLAHOMA CITY", lat: 35.4676, lon: -97.5164 },
+        { name: "NASHVILLE", lat: 36.1627, lon: -86.7816 },
+        { name: "KNOXVILLE", lat: 35.9606, lon: -83.9207 },
+        { name: "WASHINGTON DC", lat: 38.9072, lon: -77.0369 },
+        { name: "EL PASO", lat: 31.7619, lon: -106.4850 },
+        { name: "LAS VEGAS", lat: 36.1699, lon: -115.1398 },
+        { name: "BOSTON", lat: 42.3601, lon: -71.0589 },
+        { name: "DETROIT", lat: 42.3314, lon: -83.0458 },
+        { name: "PORTLAND", lat: 45.5152, lon: -122.6784 },
+        { name: "MEMPHIS", lat: 35.1495, lon: -90.0490 },
+        { name: "LOUISVILLE", lat: 38.2527, lon: -85.7585 },
+        { name: "BALTIMORE", lat: 39.2904, lon: -76.6122 },
+        { name: "MILWAUKEE", lat: 43.0389, lon: -87.9065 },
+        { name: "ALBUQUERQUE", lat: 35.0844, lon: -106.6504 },
+        { name: "TUCSON", lat: 32.2226, lon: -110.9747 },
+        { name: "FRESNO", lat: 36.7378, lon: -119.7871 },
+        { name: "SACRAMENTO", lat: 38.5816, lon: -121.4944 },
+        { name: "KANSAS CITY", lat: 39.0997, lon: -94.5786 },
+        { name: "MESA", lat: 33.4152, lon: -111.8315 },
+        { name: "ATLANTA", lat: 33.7490, lon: -84.3880 },
+        { name: "OMAHA", lat: 41.2565, lon: -95.9345 },
+        { name: "RALEIGH", lat: 35.7796, lon: -78.6382 },
+        { name: "COLORADO SPRINGS", lat: 38.8339, lon: -104.8214 },
+        { name: "VIRGINIA BEACH", lat: 36.8529, lon: -75.9780 },
+        { name: "OAKLAND", lat: 37.8044, lon: -122.2711 },
+        { name: "MINNEAPOLIS", lat: 44.9778, lon: -93.2650 },
+        { name: "TULSA", lat: 36.1540, lon: -95.9928 },
+        { name: "ARLINGTON", lat: 32.7357, lon: -97.1081 },
+        { name: "NEW ORLEANS", lat: 29.9511, lon: -90.0715 },
+        { name: "WICHITA", lat: 37.6872, lon: -97.3301 },
+        { name: "CLEVELAND", lat: 41.4993, lon: -81.6944 },
+        { name: "BAKERSFIELD", lat: 35.3733, lon: -119.0187 },
+        { name: "AURORA", lat: 39.7294, lon: -104.8319 },
+        { name: "ANAHEIM", lat: 33.8366, lon: -117.9143 },
+        { name: "HONOLULU", lat: 21.3099, lon: -157.8581 },
+        { name: "RIVERSIDE", lat: 33.9806, lon: -117.3755 },
+        { name: "SANTA ANA", lat: 33.7455, lon: -117.8677 },
+        { name: "CORPUS CHRISTI", lat: 27.8006, lon: -97.3964 },
+        { name: "LEXINGTON", lat: 38.0406, lon: -84.5037 },
+        { name: "HENDERSON", lat: 36.0395, lon: -114.9817 },
+        { name: "STOCKTON", lat: 37.9577, lon: -121.2908 },
+        { name: "ST. PAUL", lat: 44.9537, lon: -93.0900 },
+        { name: "CINCINNATI", lat: 39.1031, lon: -84.5120 },
+        { name: "ST. LOUIS", lat: 38.6270, lon: -90.1994 },
+        { name: "PITTSBURGH", lat: 40.4406, lon: -79.9959 },
+        { name: "GREENSBORO", lat: 36.0726, lon: -79.7920 },
+        { name: "LINCOLN", lat: 40.8136, lon: -96.7026 },
+        { name: "ANCHORAGE", lat: 61.2181, lon: -149.9003 },
+        { name: "PLANO", lat: 33.0198, lon: -96.6989 },
+        { name: "IRVINE", lat: 33.6846, lon: -117.8265 },
+        { name: "NEWARK", lat: 40.7357, lon: -74.1724 },
+        { name: "DURHAM", lat: 35.9940, lon: -78.8986 },
+        { name: "CHULA VISTA", lat: 32.6401, lon: -117.0842 },
+        { name: "TOLEDO", lat: 41.6528, lon: -83.5379 },
+        { name: "FORT WAYNE", lat: 41.0793, lon: -85.1394 },
+        { name: "LAREDO", lat: 27.5036, lon: -99.5076 },
+        { name: "JERSEY CITY", lat: 40.7178, lon: -74.0431 },
+        { name: "CHANDLER", lat: 33.3062, lon: -111.8413 },
+        { name: "MADISON", lat: 43.0731, lon: -89.4012 },
+        { name: "LUBBOCK", lat: 33.5779, lon: -101.8552 },
+        { name: "SCOTTSDALE", lat: 33.4942, lon: -111.9261 },
+        { name: "RENO", lat: 39.5296, lon: -119.8138 },
+        { name: "BUFFALO", lat: 42.8864, lon: -78.8784 },
+        { name: "GILBERT", lat: 33.3528, lon: -111.7890 },
+        { name: "GLENDALE AZ", lat: 33.5387, lon: -112.1860 },
+        { name: "NORTH LAS VEGAS", lat: 36.1989, lon: -115.1175 },
+        { name: "WINSTON-SALEM", lat: 36.0999, lon: -80.2442 },
+        { name: "CHESAPEAKE", lat: 36.7682, lon: -76.2875 },
+        { name: "NORFOLK", lat: 36.8508, lon: -76.2859 },
+        { name: "FREMONT", lat: 37.5485, lon: -121.9886 },
+        { name: "GARLAND", lat: 32.9126, lon: -96.6389 },
+        { name: "IRVING", lat: 32.8140, lon: -96.9489 },
+        { name: "HIALEAH", lat: 25.8576, lon: -80.2781 },
+        { name: "RICHMOND", lat: 37.5407, lon: -77.4360 },
+        { name: "BOISE", lat: 43.6150, lon: -116.2023 },
+        { name: "SPOKANE", lat: 47.6588, lon: -117.4260 },
+        { name: "BATON ROUGE", lat: 30.4515, lon: -91.1871 },
+        { name: "TACOMA", lat: 47.2529, lon: -122.4443 },
+        { name: "SAN BERNARDINO", lat: 34.1083, lon: -117.2898 },
+        { name: "MODESTO", lat: 37.6391, lon: -120.9969 },
+        { name: "HUNTSVILLE", lat: 34.7304, lon: -86.5861 },
+        { name: "DES MOINES", lat: 41.5868, lon: -93.6250 },
+        { name: "ROCHESTER", lat: 43.1566, lon: -77.6088 },
+        { name: "YONKERS", lat: 40.9312, lon: -73.8988 },
+        { name: "FAYETTEVILLE", lat: 35.0527, lon: -78.8784 },
+        { name: "WORCESTER", lat: 42.2626, lon: -71.8023 },
+        { name: "COLUMBIA", lat: 34.0007, lon: -81.0348 },
+        { name: "CHARLESTON", lat: 32.7766, lon: -79.9309 },
+        { name: "SAVANNAH", lat: 32.0835, lon: -81.0998 },
+        { name: "AUGUSTA", lat: 33.4735, lon: -82.0105 },
+        { name: "BIRMINGHAM", lat: 33.5186, lon: -86.8104 },
+        { name: "MONTGOMERY", lat: 32.3792, lon: -86.3077 },
+        { name: "MOBILE", lat: 30.6954, lon: -88.0399 },
+        { name: "TALLAHASSEE", lat: 30.4383, lon: -84.2807 },
+        { name: "JACKSONVILLE", lat: 30.3322, lon: -81.6557 },
+        { name: "TALLAHASSEE", lat: 30.4383, lon: -84.2807 },
+        { name: "GAINESVILLE", lat: 29.6516, lon: -82.3248 },
+        { name: "OCALA", lat: 29.1872, lon: -82.1401 },
+        { name: "DAYTONA BEACH", lat: 29.2108, lon: -81.0228 },
+        { name: "ORLANDO", lat: 28.5383, lon: -81.3792 },
+        { name: "TAMPA", lat: 27.9506, lon: -82.4572 },
+        { name: "ST. PETERSBURG", lat: 27.7676, lon: -82.6403 },
+        { name: "SARASOTA", lat: 27.3364, lon: -82.5307 },
+        { name: "FORT MYERS", lat: 26.6406, lon: -81.8723 },
+        { name: "PORT ST. LUCIE", lat: 27.2730, lon: -80.3582 },
+        { name: "WEST PALM BEACH", lat: 26.7153, lon: -80.0534 },
+        { name: "FORT LAUDERDALE", lat: 26.1224, lon: -80.1373 },
+        { name: "MIAMI", lat: 25.7617, lon: -80.1918 },
+        { name: "PENSACOLA", lat: 30.4213, lon: -87.2169 },
+        { name: "KEY WEST", lat: 24.5551, lon: -81.7800 },
+];
+
+      let map;
+      let currentCities = [];
+      let selectedCityDot = null;
+
+      function milesPerLon(lat) {
+        return Math.max(1, MILES_PER_LAT * Math.cos((lat * Math.PI) / 180));
+      }
+
+      function distanceMiles(aLat, aLon, bLat, bLon) {
+        const dLat = ((bLat - aLat) * Math.PI) / 180;
+        const dLon = ((bLon - aLon) * Math.PI) / 180;
+        const lat1 = (aLat * Math.PI) / 180;
+        const lat2 = (bLat * Math.PI) / 180;
+
+        const h =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+
+        return 3958.8 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+      }
+
+      function getBounds(center) {
+        const latRange = HALF_VIEW_MILES / MILES_PER_LAT;
+        const lonRange = HALF_VIEW_MILES / milesPerLon(center.lat);
+
+        return {
+          minLat: center.lat - latRange,
+          maxLat: center.lat + latRange,
+          minLon: center.lon - lonRange,
+          maxLon: center.lon + lonRange
+        };
+      }
+
+      async function geocodeLocation(place) {
+        const url =
+          "https://geocoding-api.open-meteo.com/v1/search" +
+          "?name=" + encodeURIComponent(place) +
+          "&count=1&language=en&format=json";
+
+        const data = await fetch(url).then(r => r.json());
+        const hit = data?.results?.find(r => r.country_code === "US") || data?.results?.[0];
+
+        if (!hit) {
+          return { lat: 33.4735, lon: -82.0105 };
+        }
+
+        return {
+          lat: Number(hit.latitude),
+          lon: Number(hit.longitude)
+        };
+      }
+
+      function getCitiesInsideArea(center) {
+        const bounds = getBounds(center);
+
+        const areaCities = cities
+          .map(city => ({
+            ...city,
+            distance: distanceMiles(center.lat, center.lon, city.lat, city.lon)
+          }))
+          .filter(city =>
+            city.lat >= bounds.minLat &&
+            city.lat <= bounds.maxLat &&
+            city.lon >= bounds.minLon &&
+            city.lon <= bounds.maxLon
+          )
+          .sort((a, b) => a.distance - b.distance);
+
+        if (selectedCityDot) {
+          const alreadyThere = areaCities.some(city =>
+            distanceMiles(selectedCityDot.lat, selectedCityDot.lon, city.lat, city.lon) < 15
+          );
+
+          if (!alreadyThere) {
+            areaCities.unshift({
+              ...selectedCityDot,
+              distance: 0,
+              selected: true
+            });
+          }
+        }
+
+        return areaCities;
+      }
+
+      function formatCityName(name) {
+        return String(name || "")
+          .toLowerCase()
+          .split(" ")
+          .map(part => {
+            if (part === "dc") return "DC";
+            if (part === "az") return "AZ";
+            if (part === "ga") return "GA";
+            if (part === "fl") return "FL";
+            if (part === "sc") return "SC";
+            if (part === "nc") return "NC";
+            if (part === "tn") return "TN";
+            return part.charAt(0).toUpperCase() + part.slice(1);
+          })
+          .join(" ");
+      }
+
+      function drawDots() {
+        window.redrawDots = drawDots;
+        const MIN_DOT_SCREEN_DISTANCE = Number(window.wsDotEditor?.dotSpacing || 129);
+        const SAFE_DOT_TOP = 80;
+        const SAFE_DOT_BOTTOM = 635;
+
+        const projected = currentCities
+          .map(city => {
+            const point = map.project([city.lon, city.lat]);
+            const priority = cities.findIndex(item => item.name === city.name);
+
+            return {
+              ...city,
+              point,
+              priority: city.selected ? -9999 : priority
+            };
+          })
+          .filter(city =>
+            Number.isFinite(city.point.x) &&
+            Number.isFinite(city.point.y) &&
+            city.point.y >= SAFE_DOT_TOP &&
+            city.point.y <= 635
+          )
+          .sort((a, b) => {
+            if (a.selected && !b.selected) return -1;
+            if (!a.selected && b.selected) return 1;
+
+            const ap = a.priority < 0 ? 9999 : a.priority;
+            const bp = b.priority < 0 ? 9999 : b.priority;
+
+            return ap - bp;
+          });
+
+        const kept = [];
+
+        projected.forEach(city => {
+          const tooClose = kept.some(other => {
+            const dx = city.point.x - other.point.x;
+            const dy = city.point.y - other.point.y;
+            const screenDistance = Math.sqrt(dx * dx + dy * dy);
+
+            return screenDistance < MIN_DOT_SCREEN_DISTANCE;
+          });
+
+          if (!tooClose) {
+            kept.push(city);
+          }
+        });
+
+        dots.innerHTML = kept
+          .map((city, index) => {
+            const point = city.point;
+            const temp = 72 + ((index * 3) % 18);
+
+            return `
+              <div class="city-dot" data-city="${city.name}" style="left:${Math.round(point.x)}px; top:${Math.round(point.y)}px;">
+                <div class="temp">${temp}°</div>
+                <div class="name">${formatCityName(city.name)}</div>
+              </div>
+            `;
+          })
+          .join("");
+
+        status.innerText = "Dots shown: " + kept.length + " / " + currentCities.length;
+      }
+
+      async function showArea() {
+        const place = document.getElementById("locationInput").value || "Augusta, GA";
+        status.innerText = "Loading area...";
+
+        const center = await geocodeLocation(place);
+        selectedCityDot = {
+          name: place.split(",")[0].trim().toUpperCase(),
+          lat: center.lat,
+          lon: center.lon
+        };
+        const bounds = getBounds(center);
+
+        currentCities = getCitiesInsideArea(center);
+
+        map.fitBounds(
+          [
+            [bounds.minLon, bounds.minLat],
+            [bounds.maxLon, bounds.maxLat]
+          ],
+          {
+            padding: 0,
+            duration: 0
+          }
+        );
+
+        setTimeout(() => {
+          drawDots();
+          status.innerText = "Dots loaded: " + currentCities.length;
+        }, 300);
+      }
+
+      try {
+        status.innerText = "Importing MapLibre...";
+        const mod = await import("maplibre-gl");
+        const maplibregl = mod.default || mod;
+
+        status.innerText = "Starting map...";
+
+        const styleResponse = await fetch(MAPTILER_JSON_URL);
+        const style = await styleResponse.json();
+
+        map = new maplibregl.Map({
+          container: "map",
+          style,
+          center: [-82.0105, 33.4735],
+          zoom: 6,
+          interactive: false,
+          attributionControl: false
+        });
+
+        map.on("load", () => {
+          status.innerText = "Map loaded";
+          showArea();
+        });
+
+        map.on("moveend", drawDots);
+
+        document.getElementById("goBtn").addEventListener("click", showArea);
+      } catch (err) {
+        console.error(err);
+        status.innerText = "ERROR: " + err.message;
+      }
+    </script>
+  <!-- DOT EDITOR HTML START -->
+
+    <div id="dotEditor">
+      <div class="title">REGIONAL DOT EDITOR</div>
+
+      <div>Selected sample: <span id="selectedDotName">none</span></div>
+
+      <label>
+        Temp font — applies to ALL temps
+        <select id="tempFontPick">
+          <option value="Star4000Extended">Star4000Extended</option>
+          <option value="Star4000">Star4000</option>
+          <option value="Star4000Large">Star4000Large</option>
+          <option value="Star4000LargeCompressed">Star4000LargeCompressed</option>
+          <option value="Star4000Radar">Star4000Radar</option>
+        </select>
+      </label>
+
+      <label>
+        City font — applies to ALL names
+        <select id="nameFontPick">
+          <option value="Star4000Extended">Star4000Extended</option>
+          <option value="Star4000">Star4000</option>
+          <option value="Star4000Large">Star4000Large</option>
+          <option value="Star4000LargeCompressed">Star4000LargeCompressed</option>
+          <option value="Star4000Radar">Star4000Radar</option>
+        </select>
+      </label>
+
+      <label>
+        Temp size
+        <input id="tempSizePick" type="range" min="24" max="80" value="35">
+      </label>
+
+      <label>
+        City size
+        <input id="nameSizePick" type="range" min="16" max="52" value="20">
+      </label>
+
+      <label>
+        Temp/name spacing
+        <input id="labelGapPick" type="range" min="-20" max="30" value="1">
+      </label>
+
+      <label>
+        Dot spacing / cluster cleanup
+        <input id="dotSpacingPick" type="range" min="80" max="260" value="80">
+      </label>
+    </div>
+
+    <script id="dotEditorScript">
+      (function () {
+        const saved = JSON.parse(localStorage.getItem("wsDotEditor") || "{}");
+
+        const settings = {
+          tempFont: saved.tempFont || "Star4000",
+          nameFont: saved.nameFont || "Star4000Extended",
+          tempSize: saved.tempSize || 35,
+          nameSize: saved.nameSize || 20,
+          labelGap: saved.labelGap ?? 1,
+          dotSpacing: saved.dotSpacing || 80
+        };
+
+        window.wsDotEditor = settings;
+
+        const root = document.documentElement;
+
+        function setValue(id, value) {
+          const el = document.getElementById(id);
+          if (el) el.value = value;
+        }
+
+        function applyEditor() {
+          root.style.setProperty("--dot-temp-font", '"' + settings.tempFont + '"');
+          root.style.setProperty("--dot-name-font", '"' + settings.nameFont + '"');
+          root.style.setProperty("--dot-temp-size", settings.tempSize + "px");
+          root.style.setProperty("--dot-name-size", settings.nameSize + "px");
+          root.style.setProperty("--dot-temp-line", Math.round(settings.tempSize * .9) + "px");
+          root.style.setProperty("--dot-name-line", Math.round(settings.nameSize * .95) + "px");
+          root.style.setProperty("--dot-label-gap", settings.labelGap + "px");
+          root.style.setProperty("--dot-text-blur", settings.textBlur + "px");
+
+          localStorage.setItem("wsDotEditor", JSON.stringify(settings));
+
+          if (window.redrawDots) {
+            window.redrawDots();
+          }
+        }
+
+        function bind(id, key, isNumber) {
+          const el = document.getElementById(id);
+          if (!el) return;
+
+          el.addEventListener("input", () => {
+            settings[key] = isNumber ? Number(el.value) : el.value;
+            window.wsDotEditor = settings;
+            applyEditor();
+          });
+        }
+
+        setValue("tempFontPick", settings.tempFont);
+        setValue("nameFontPick", settings.nameFont);
+        setValue("tempSizePick", settings.tempSize);
+        setValue("nameSizePick", settings.nameSize);
+        setValue("labelGapPick", settings.labelGap);
+        setValue("dotSpacingPick", settings.dotSpacing);
+        setValue("textBlurPick", settings.textBlur);
+
+        bind("tempFontPick", "tempFont", false);
+        bind("nameFontPick", "nameFont", false);
+        bind("tempSizePick", "tempSize", true);
+        bind("nameSizePick", "nameSize", true);
+        bind("labelGapPick", "labelGap", true);
+        bind("dotSpacingPick", "dotSpacing", true);
+        bind("textBlurPick", "textBlur", true);
+
+        document.addEventListener("click", (event) => {
+          const dot = event.target.closest(".city-dot");
+          if (!dot) return;
+
+          document.querySelectorAll(".city-dot").forEach(el => {
+            el.classList.remove("selected-dot");
+          });
+
+          dot.classList.add("selected-dot");
+
+          const name = dot.dataset.city || dot.querySelector(".name")?.textContent || "selected";
+          document.getElementById("selectedDotName").textContent = name;
+        });
+
+        applyEditor();
+      })();
+    </script>
+
+<!-- DOT EDITOR HTML END -->
+<script id="dotExportScript">
+  (function () {
+    function addExportButton() {
+      const editor = document.getElementById("dotEditor");
+      if (!editor || document.getElementById("exportDotSettingsBtn")) return;
+
+      const btn = document.createElement("button");
+      btn.id = "exportDotSettingsBtn";
+      btn.textContent = "Export Settings";
+      btn.style.width = "100%";
+      btn.style.marginTop = "10px";
+      btn.style.padding = "8px";
+      btn.style.background = "#ffff00";
+      btn.style.color = "#000";
+      btn.style.border = "0";
+      btn.style.fontWeight = "bold";
+      btn.style.cursor = "pointer";
+
+      btn.addEventListener("click", function () {
+        const visibleDots = Array.from(document.querySelectorAll(".city-dot")).map(dot => ({
+          city: dot.dataset.city || dot.querySelector(".name")?.textContent || "",
+          left: dot.style.left,
+          top: dot.style.top,
+          temp: dot.querySelector(".temp")?.textContent || "",
+          name: dot.querySelector(".name")?.textContent || ""
+        }));
+
+        const exportData = {
+          exportedAt: new Date().toISOString(),
+          project: "WeatherSTAR Regional Map",
+          settings: window.wsDotEditor || JSON.parse(localStorage.getItem("wsDotEditor") || "{}"),
+          visibleDots,
+          note: "These settings are global. Temp font changes apply to all temperatures. City font changes apply to all city names."
+        };
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+          type: "application/json"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "weatherstar-regional-dot-settings.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      editor.appendChild(btn);
+    }
+
+    addExportButton();
+    document.addEventListener("DOMContentLoaded", addExportButton);
+    setTimeout(addExportButton, 500);
+  })();
+</script>
+<script id="dotLetterSpacingScript">
+  (function () {
+    function setupLetterSpacingControls() {
+      const editor = document.getElementById("dotEditor");
+      if (!editor || document.getElementById("tempLetterSpacingPick")) return;
+
+      const saved = JSON.parse(localStorage.getItem("wsDotEditor") || "{}");
+
+      if (!window.wsDotEditor) {
+        window.wsDotEditor = {};
+      }
+
+      window.wsDotEditor.tempLetterSpacing = saved.tempLetterSpacing ?? window.wsDotEditor.tempLetterSpacing ?? 0;
+      window.wsDotEditor.nameLetterSpacing = saved.nameLetterSpacing ?? window.wsDotEditor.nameLetterSpacing ?? 0;
+
+      const tempWrap = document.createElement("label");
+      tempWrap.innerHTML = `
+        Temp letter spacing
+        <input id="tempLetterSpacingPick" type="range" min="-4" max="12" step="0.5" value="${window.wsDotEditor.tempLetterSpacing}">
+      `;
+
+      const nameWrap = document.createElement("label");
+      nameWrap.innerHTML = `
+        City name letter spacing
+        <input id="nameLetterSpacingPick" type="range" min="-4" max="12" step="0.5" value="${window.wsDotEditor.nameLetterSpacing}">
+      `;
+
+      const exportBtn = document.getElementById("exportDotSettingsBtn");
+      if (exportBtn) {
+        editor.insertBefore(tempWrap, exportBtn);
+        editor.insertBefore(nameWrap, exportBtn);
+      } else {
+        editor.appendChild(tempWrap);
+        editor.appendChild(nameWrap);
+      }
+
+      function saveAndApply() {
+        document.documentElement.style.setProperty(
+          "--dot-temp-letter-spacing",
+          window.wsDotEditor.tempLetterSpacing + "px"
+        );
+
+        document.documentElement.style.setProperty(
+          "--dot-name-letter-spacing",
+          window.wsDotEditor.nameLetterSpacing + "px"
+        );
+
+        localStorage.setItem("wsDotEditor", JSON.stringify(window.wsDotEditor));
+      }
+
+      document.getElementById("tempLetterSpacingPick").addEventListener("input", function () {
+        window.wsDotEditor.tempLetterSpacing = Number(this.value);
+        saveAndApply();
+      });
+
+      document.getElementById("nameLetterSpacingPick").addEventListener("input", function () {
+        window.wsDotEditor.nameLetterSpacing = Number(this.value);
+        saveAndApply();
+      });
+
+      saveAndApply();
+    }
+
+    setupLetterSpacingControls();
+    document.addEventListener("DOMContentLoaded", setupLetterSpacingControls);
+    setTimeout(setupLetterSpacingControls, 500);
+  })();
+</script>
+
+
+
+
+<script id="setGlobalDotDefaultsOnce">
+  try {
+    if (!localStorage.getItem("wsDotEditorGlobalDefaultsApplied")) {
+      const saved = JSON.parse(localStorage.getItem("wsDotEditor") || "{}");
+      Object.assign(saved, {
+        tempFont: "Star4000",
+        nameFont: "Star4000Extended",
+        tempSize: 35,
+        nameSize: 20,
+        labelGap: 1,
+        dotSpacing: 80,
+        tempLetterSpacing: 0,
+        nameLetterSpacing: 0,
+        textBlur: 0.55
+      });
+      localStorage.setItem("wsDotEditor", JSON.stringify(saved));
+      localStorage.setItem("wsDotEditorGlobalDefaultsApplied", "true");
+    }
+  } catch (e) {}
+</script>
+
+
+<script id="regionalParentSearchBridge">
+(() => {
+  function setRegionalLocation(place) {
+    if (!place || !String(place).trim()) return;
+
+    const value = String(place).trim();
+
+    [
+      "locationInput",
+      "placeInput",
+      "searchInput",
+      "cityInput",
+      "city-input",
+      "regional-search"
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = value;
+    });
+
+    const btn =
+      document.getElementById("goBtn") ||
+      document.getElementById("regional-go") ||
+      document.querySelector("button[data-action='search']");
+
+    if (btn) {
+      btn.click();
+      return;
+    }
+
+    if (typeof window.showArea === "function") {
+      window.showArea(value);
+    }
+  }
+
+  function readUrlLocation() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("location") || params.get("city") || "";
+  }
+
+  window.addEventListener("message", event => {
+    if (event.data && event.data.type === "weatherstar:setRegionalLocation") {
+      setRegionalLocation(event.data.location);
+    }
+  });
+
+  window.addEventListener("load", () => {
+    const place = readUrlLocation();
+    if (!place) return;
+
+    setTimeout(() => setRegionalLocation(place), 100);
+    setTimeout(() => setRegionalLocation(place), 500);
+    setTimeout(() => setRegionalLocation(place), 1000);
+  });
+})();
+</script>
+</body>
+</html>

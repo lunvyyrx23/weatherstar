@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Regional Observations</title>
+<style>
+  @font-face { font-family:"Star4000"; src:url("https://wsbylunv.neocities.org/Star4000.ttf") format("truetype"); }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"Star4000",monospace; }
+  body { background:#000; width:1090px; height:810px; overflow:hidden; }
+  #screen {
+    position:relative; width:1090px; height:810px;
+    background-image:url('https://wsbylunv.neocities.org/ws4000.png');
+    background-size:100% 100%;
+  }
+  #basemap { position:absolute; inset:0; }
+  #frame {
+    position:absolute; inset:0; z-index:2;
+    background-image:url('https://wsbylunv.neocities.org/ws4000wherediditgo.png');
+    background-size:100% 100%;
+  }
+  #dots { position:absolute; inset:0; z-index:3; }
+</style>
+</head>
+<body>
+<div id="screen">
+  <div id="basemap"></div>
+  <div id="frame"></div>
+  <div id="dots"></div>
+</div>
+<script>
+const MI_PER_LAT = 69.0;
+function miPerLon(lat) { return 69.0 * Math.cos(lat * Math.PI / 180); }
+const MAP_LEFT=80, MAP_TOP=170, MAP_RIGHT=1010, MAP_BOTTOM=750;
+const MAP_PW=MAP_RIGHT-MAP_LEFT, MAP_PH=MAP_BOTTOM-MAP_TOP;
+const FULL_BOUNDS={minLon:-125.617,maxLon:-63.844,minLat:22.415,maxLat:49.546};
+const M_MAX=0.998403, M_SPAN=0.596809; // pre-computed Mercator constants
+
+function fullMercY(lat){return Math.log(Math.tan(Math.PI/4+lat*Math.PI/360));}
+function latLonToFrac(lat,lon){
+  const xFrac=(lon-FULL_BOUNDS.minLon)/(FULL_BOUNDS.maxLon-FULL_BOUNDS.minLon);
+  const yFrac=(M_MAX-fullMercY(lat))/M_SPAN;
+  return{xFrac,yFrac};
+}
+const MANUAL_OFFSETS={
+  "Miami":{x:842,y:712},"Jacksonville":{x:821,y:586},"Key West":{x:831,y:737},
+  "Bowling Green":{x:737,y:394},"Atlanta":{pyOffset:-75},"Birmingham":{pyOffset:-75},
+};
+const REG_CITIES=[
+  {name:"Atlanta",lat:33.749,lon:-84.388},{name:"Boston",lat:42.3584,lon:-71.0598},
+  {name:"Chicago",lat:41.9796,lon:-87.9045},{name:"Cleveland",lat:41.4995,lon:-81.6954},
+  {name:"Dallas",lat:32.8959,lon:-97.0372},{name:"Denver",lat:39.7391,lon:-104.9847},
+  {name:"Detroit",lat:42.3314,lon:-83.0457},{name:"Hartford",lat:41.7637,lon:-72.6851},
+  {name:"Houston",lat:29.7633,lon:-95.3633},{name:"Indianapolis",lat:39.7684,lon:-86.158},
+  {name:"Los Angeles",lat:34.0522,lon:-118.2437},{name:"Miami",lat:25.7743,lon:-80.1937},
+  {name:"Minneapolis",lat:44.98,lon:-93.2638},{name:"New York",lat:40.78,lon:-73.88},
+  {name:"Norfolk",lat:36.8468,lon:-76.2852},{name:"Orlando",lat:28.5383,lon:-81.3792},
+  {name:"Philadelphia",lat:39.9523,lon:-75.1638},{name:"Pittsburgh",lat:40.4406,lon:-79.9959},
+  {name:"St. Louis",lat:38.6273,lon:-90.1979},{name:"San Francisco",lat:37.6148,lon:-122.3918},
+  {name:"Seattle",lat:47.6062,lon:-122.3321},{name:"Syracuse",lat:43.0481,lon:-76.1474},
+  {name:"Tampa",lat:27.9756,lon:-82.5329},{name:"Washington DC",lat:38.8951,lon:-77.0364},
+  {name:"Albany",lat:42.6526,lon:-73.7562},{name:"Albuquerque",lat:35.0845,lon:-106.6511},
+  {name:"Amarillo",lat:35.222,lon:-101.8313},{name:"Austin",lat:30.2671,lon:-97.7431},
+  {name:"Baltimore",lat:39.2904,lon:-76.6122},{name:"Bangor",lat:44.8012,lon:-68.7778},
+  {name:"Birmingham",lat:33.5207,lon:-86.8025},{name:"Bismarck",lat:46.8083,lon:-100.7837},
+  {name:"Boise",lat:43.6135,lon:-116.2034},{name:"Buffalo",lat:42.8864,lon:-78.8784},
+  {name:"Charleston SC",lat:32.7766,lon:-79.9309},{name:"Charleston WV",lat:38.3498,lon:-81.6326},
+  {name:"Charlotte",lat:35.2271,lon:-80.8431},{name:"Cheyenne",lat:41.14,lon:-104.8202},
+  {name:"Cincinnati",lat:39.162,lon:-84.4569},{name:"Columbia",lat:34.0007,lon:-81.0348},
+  {name:"Columbus",lat:39.9612,lon:-82.9988},{name:"Des Moines",lat:41.6005,lon:-93.6091},
+  {name:"Duluth",lat:46.7833,lon:-92.1066},{name:"El Paso",lat:31.7587,lon:-106.4869},
+  {name:"Eugene",lat:44.0521,lon:-123.0867},{name:"Fargo",lat:46.8772,lon:-96.7898},
+  {name:"Fresno",lat:36.7477,lon:-119.7724},{name:"Grand Rapids",lat:42.9634,lon:-85.6681},
+  {name:"Helena",lat:46.5927,lon:-112.0361},{name:"Jackson",lat:32.2988,lon:-90.1848},
+  {name:"Jacksonville",lat:30.3322,lon:-81.6556},{name:"Kansas City",lat:39.1142,lon:-94.6275},
+  {name:"Key West",lat:24.5557,lon:-81.7826},{name:"Knoxville",lat:35.9606,lon:-83.9207},
+  {name:"Las Vegas",lat:36.175,lon:-115.1372},{name:"Lincoln",lat:40.8,lon:-96.667},
+  {name:"Louisville",lat:38.2542,lon:-85.7594},{name:"Memphis",lat:35.1495,lon:-90.049},
+  {name:"Milwaukee",lat:43.0389,lon:-87.9065},{name:"Mobile",lat:30.6944,lon:-88.043},
+  {name:"Nashville",lat:36.1659,lon:-86.7844},{name:"New Orleans",lat:29.9546,lon:-90.0751},
+  {name:"Oklahoma City",lat:35.4676,lon:-97.5164},{name:"Omaha",lat:41.2586,lon:-95.9378},
+  {name:"Phoenix",lat:33.4484,lon:-112.074},{name:"Pierre",lat:44.3683,lon:-100.351},
+  {name:"Portland ME",lat:43.6615,lon:-70.2553},{name:"Portland OR",lat:45.5234,lon:-122.6762},
+  {name:"Providence",lat:41.824,lon:-71.4128},{name:"Raleigh",lat:35.7721,lon:-78.6386},
+  {name:"Reno",lat:39.4986,lon:-119.7681},{name:"Richmond",lat:37.5538,lon:-77.4603},
+  {name:"Sacramento",lat:38.5816,lon:-121.4944},{name:"Salt Lake City",lat:40.7608,lon:-111.891},
+  {name:"San Antonio",lat:29.4241,lon:-98.4936},{name:"San Diego",lat:32.7153,lon:-117.1573},
+  {name:"Savannah",lat:32.0835,lon:-81.0998},{name:"Shreveport",lat:32.5251,lon:-93.7502},
+  {name:"Sioux Falls",lat:43.55,lon:-96.7003},{name:"Spokane",lat:47.6597,lon:-117.4291},
+  {name:"Toledo",lat:41.6639,lon:-83.5552},{name:"Tulsa",lat:36.154,lon:-95.9928},
+  {name:"Wichita",lat:37.6922,lon:-97.3375},{name:"Tucson",lat:32.2216,lon:-110.9698},
+  {name:"Lubbock",lat:33.5779,lon:-101.8552},{name:"Bowling Green",lat:36.9685,lon:-86.4808},
+];
+
+const BASE_ICON="https://wsbylunv.neocities.org/yea/";
+
+function normalizeCondition(str){
+  if(!str)return"Cloudy";
+  let s=String(str).toLowerCase().trim();
+  s=s.replace(/\b(slight chance of|slight chance|chance of|chance|isolated|scattered|areas of|patchy|likely|and breezy|and windy)\b\s*/gi,"");
+  s=s.replace(/\b(light|moderate|dense)\s+/gi,"");
+  s=s.trim();
+  if(/thunder|t-?storm/i.test(s))return"Thunderstorm";
+  if(/tornado/i.test(s))return"Tornado";
+  if(/blizzard|heavy.*snow|blowing snow/i.test(s))return"Heavy Snow";
+  if(/snow.*shower|snow.*squall|flurr/i.test(s))return"Snow Showers";
+  if(/(rain|shower).*snow|snow.*(rain|mix)|wintry/i.test(s))return"Rain/Snow Mix";
+  if(/sleet|ice pellet/i.test(s))return"Sleet";
+  if(/freezing rain/i.test(s))return"Freezing Rain";
+  if(/snow/i.test(s))return"Snow";
+  if(/heavy.*rain|heavy.*shower/i.test(s))return"Heavy Rain";
+  if(/rain shower|shower|rain|drizzle/i.test(s))return"Rain Showers";
+  if(/fog|mist/i.test(s))return"Foggy";
+  if(/haze/i.test(s))return"Hazy";
+  if(/partly sunny/i.test(s))return"Partly Sunny";
+  if(/mostly sunny/i.test(s))return"Mostly Sunny";
+  if(/partly cloudy/i.test(s))return"Partly Cloudy";
+  if(/mostly cloudy/i.test(s))return"Mostly Cloudy";
+  if(/mostly clear/i.test(s))return"Mostly Clear";
+  if(/partly clear/i.test(s))return"Partly Clear";
+  if(/sunny/i.test(s))return"Sunny";
+  if(/clear|fair/i.test(s))return"Clear";
+  if(/cloudy|overcast/i.test(s))return"Cloudy";
+  return"Cloudy";
+}
+
+function getGifName(txt,isDay=true){
+  const c=normalizeCondition(txt).toLowerCase();
+  if(c==="thunderstorm")return BASE_ICON+"Thunderstorm (5-91).gif";
+  if(c==="heavy snow")return BASE_ICON+"Heavy-Snow.gif";
+  if(c==="snow showers")return BASE_ICON+"Light-Snow.gif";
+  if(c==="rain/snow mix")return BASE_ICON+"Rain-Snow.gif";
+  if(c==="sleet"||c==="freezing rain")return BASE_ICON+"Snow-Sleet.gif";
+  if(c==="snow")return BASE_ICON+"Light-Snow.gif";
+  if(c==="heavy rain")return BASE_ICON+"Rain.gif";
+  if(c==="rain showers")return BASE_ICON+"Showers.gif";
+  if(c==="foggy"||c==="hazy")return BASE_ICON+"Fog.gif";
+  if(!isDay){
+    if(c==="partly clear")return BASE_ICON+"Partly-Clear.gif";
+    if(c==="mostly clear")return BASE_ICON+"Mostly-Clear.gif";
+    if(c==="clear"||c==="sunny")return BASE_ICON+"Clear.gif";
+    if(c==="partly cloudy"||c==="mostly sunny")return BASE_ICON+"Partly-Cloudy.gif";
+    if(c==="mostly cloudy"||c==="partly sunny")return BASE_ICON+"Mostly-Cloudy-2.gif";
+  } else {
+    if(c==="mostly sunny")return BASE_ICON+"Partly-Cloudy.gif";
+    if(c==="partly sunny")return BASE_ICON+"Mostly-Cloudy-2.gif";
+    if(c==="partly cloudy")return BASE_ICON+"Partly-Cloudy.gif";
+    if(c==="mostly cloudy")return BASE_ICON+"Mostly-Cloudy-2.gif";
+    if(c==="mostly clear")return BASE_ICON+"Mostly-Sunny.gif";
+    if(c==="sunny"||c==="clear")return BASE_ICON+"Sunny.gif";
+  }
+  return BASE_ICON+"Cloudy.gif";
+}
+
+function panBasemap(){
+  const bm=document.getElementById("basemap");
+  bm.style.backgroundImage="url('https://raw.githubusercontent.com/lunvyyrx23/ws4000byaqzzyx/main/Basemap2.png')";
+  bm.style.backgroundSize=`${MAP_PW}px ${MAP_PH}px`;
+  bm.style.backgroundPosition=`${MAP_LEFT}px ${MAP_TOP}px`;
+  bm.style.backgroundRepeat="no-repeat";
+}
+
+function drawDots(cities){
+  const dotsDiv=document.getElementById("dots");
+  dotsDiv.innerHTML="";
+  function toScreen(lat,lon){
+    const{xFrac,yFrac}=latLonToFrac(lat,lon);
+    const x=MAP_LEFT+xFrac*MAP_PW;
+    const y=MAP_TOP+yFrac*MAP_PH;
+    return{x,y};
+  }
+  cities.forEach(city=>{
+    let{x,y}=toScreen(city.lat,city.lon);
+    const off=MANUAL_OFFSETS[city.name];
+    if(off?.x!==undefined){x=off.x;y=off.y;}
+    if(off?.pyOffset)y+=off.pyOffset;
+    if(x<MAP_LEFT+5||x>MAP_RIGHT-5||y<MAP_TOP+5||y>MAP_BOTTOM-5)return;
+    const el=document.createElement("div");
+    el.style.cssText=`position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:4;`;
+    el.innerHTML=`
+      <div style="width:6px;height:6px;background:#fff;border-radius:50%;border:1.5px solid #000;flex-shrink:0;"></div>
+      <img src="${city.icon}" style="width:36px;height:auto;image-rendering:pixelated;margin-top:1px;">
+      <div style="color:#ffff00;font-size:13px;white-space:nowrap;line-height:1;text-shadow:1px 1px 0 #000,-1px -1px 0 #000;">${city.temp}</div>
+      <div style="color:#fff;font-size:10px;white-space:nowrap;line-height:1;text-shadow:1px 1px 0 #000,-1px -1px 0 #000;">${city.name}</div>
+    `;
+    dotsDiv.appendChild(el);
+  });
+}
+
+async function init(){
+  panBasemap();
+  const results=[];
+  for(let i=0;i<REG_CITIES.length;i+=6){
+    const batch=REG_CITIES.slice(i,i+6);
+    const br=await Promise.all(batch.map(async city=>{
+      try{
+        const p=await fetch(`https://api.weather.gov/points/${city.lat},${city.lon}`).then(r=>r.json());
+        const fh=p?.properties?.forecastHourly;
+        if(!fh)throw new Error();
+        const f=await fetch(fh).then(r=>r.json());
+        const now=f?.properties?.periods?.[0];
+        const temp=now?.temperature!=null?now.temperature+"°":"--";
+        const isDay=now?.isDaytime!==undefined?!!now.isDaytime:true;
+        const icon=getGifName(now?.shortForecast||"",isDay);
+        return{...city,temp,icon};
+      }catch{
+        return{...city,temp:"--",icon:getGifName("Cloudy",true)};
+      }
+    }));
+    results.push(...br);
+    drawDots(results);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

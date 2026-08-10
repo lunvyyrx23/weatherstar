@@ -1,0 +1,32 @@
+﻿#hourly-scrollbox {
+  position: absolute !important;
+  left: 95px;
+  top: 180px;
+  width: 900px;
+  height: 520px;
+  overflow: auto !important;
+  z-index: 30 !important;
+}
+
+#hourly-scrollbox #hourly-table,
+#hourly-scrollbox .hourly-table {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: 100% !important;
+}
+
+/* while editing, move the scrollbox itself */
+body.editor-on #hourly-scrollbox {
+  pointer-events: auto !important;
+  cursor: move !important;
+  outline: 3px solid yellow !important;
+  resize: both !important;
+  overflow: auto !important;
+}
+
+/* keep the table from becoming the draggable target */
+body.editor-on #hourly-scrollbox #hourly-table,
+body.editor-on #hourly-scrollbox .hourly-table {
+  pointer-events: none !important;
+}

@@ -1,0 +1,68 @@
+function mountRegionalMap() {
+  let page =
+    document.getElementById("page-regional") ||
+    document.querySelector("[data-page='regional']") ||
+    document.querySelector(".page-regional") ||
+    document.querySelector(".regional-page");
+
+  if (!page) {
+    const screen =
+      document.getElementById("screen") ||
+      document.getElementById("scr") ||
+      document.querySelector(".screen") ||
+      document.body;
+
+    page = document.createElement("div");
+    page.id = "page-regional";
+    page.className = "page active";
+    screen.appendChild(page);
+  }
+
+  page.style.position = "absolute";
+  page.style.inset = "0";
+  page.style.width = "1091px";
+  page.style.height = "820px";
+  page.style.display = "block";
+  page.style.overflow = "hidden";
+  page.style.background = "#001244";
+
+  page.innerHTML = `
+    <iframe
+      id="regional-map-frame"
+      src="/regional-map.html"
+      title="WeatherSTAR Regional Map"
+      scrolling="no"
+      style="
+        position:absolute;
+        left:0;
+        top:0;
+        width:1091px;
+        height:820px;
+        border:0;
+        margin:0;
+        padding:0;
+        display:block;
+        overflow:hidden;
+        background:#001244;
+      "
+    ></iframe>
+  `;
+}
+
+export function renderRegionalPage() {
+  mountRegionalMap();
+}
+
+export function renderRegional() {
+  mountRegionalMap();
+}
+
+export function initRegional() {
+  mountRegionalMap();
+}
+
+export function showRegional() {
+  mountRegionalMap();
+}
+
+export default renderRegionalPage;

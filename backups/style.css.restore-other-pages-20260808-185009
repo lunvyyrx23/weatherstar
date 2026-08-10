@@ -1,0 +1,680 @@
+@font-face {
+  font-family: Star4000;
+  src: url("/fonts/Star4000.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Star4000Small;
+  src: url("/fonts/Star4000Small.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Star4000Large;
+  src: url("/fonts/Star4000Large.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Star4000Extended;
+  src: url("/fonts/Star4000Extended.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Star4000LargeCompressed;
+  src: url("/fonts/Star4000LargeCompressed.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Star4000LargeCompressedNumbers;
+  src: url("/fonts/Star4000LargeCompressedNumbers.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0a0a0a;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+/* APP TOP BAR */
+
+#topbar {
+  height: 48px;
+  background: #111;
+  border-bottom: 2px solid #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+#logo {
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+#logo span {
+  color: #ffff00;
+}
+
+#city-input {
+  height: 30px;
+  width: 190px;
+  background: #202030;
+  color: white;
+  border: 1px solid #555;
+  padding: 0 8px;
+  font-family: Arial, sans-serif;
+}
+
+button {
+  height: 30px;
+  background: #202040;
+  color: white;
+  border: 1px solid #555;
+  padding: 0 10px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+}
+
+button:hover {
+  background: #303060;
+}
+
+/* WEATHERSTAR SCREEN */
+
+#screen {
+  position: relative;
+  width: 1091px;
+  height: 820px;
+  margin: 18px auto;
+  background: #001244 url("/bg/ws4000_bg.png") center / 100% 100% no-repeat;
+  overflow: hidden;
+  color: white;
+}
+
+.page {
+  display: none;
+  position: absolute;
+  inset: 0;
+}
+
+.page.active {
+  display: block;
+}
+
+#page-header,
+#cc-temp,
+#cc-cond,
+#cc-wind,
+#cc-stats,
+#loc-name,
+#latest-table,
+#latest-message,
+#hourly-table,
+#hourly-message,
+.regional-temp,
+.regional-name,
+#regional-status,
+#bottom-banner {
+  font-weight: normal;
+  filter: blur(0.55px);
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000,
+     4px  4px 0 #000,
+     5px  5px 0 #000;
+}
+
+/* CURRENT CONDITIONS */
+
+#page-header {
+  position: absolute;
+  left: 270px;
+  top: 67px;
+  width: 215px;
+  height: 97px;
+  z-index: 20;
+  color: #ffff00;
+  font-family: Star4000, monospace;
+  font-size: 42px;
+  line-height: 0.95;
+  text-transform: none;
+}
+
+#cc-icon {
+  position: absolute;
+  top: 301px;
+  left: 182px;
+  width: 149px;
+  image-rendering: pixelated;
+}
+
+#cc-temp {
+  position: absolute;
+  left: 215px;
+  top: 177px;
+  width: 137px;
+  height: 125px;
+  color: white;
+  font-family: Star4000Large, monospace;
+  font-size: 49px;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+#cc-cond {
+  position: absolute;
+  left: 175px;
+  top: 236px;
+  width: 200px;
+  height: 35px;
+  color: white;
+  font-family: Star4000Extended, monospace;
+  font-size: 37px;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+#cc-wind {
+  position: absolute;
+  left: 127px;
+  top: 500px;
+  width: 299px;
+  height: 51px;
+  color: white;
+  font-family: Star4000Extended, monospace;
+  font-size: 35px;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+#loc-name {
+  position: absolute;
+  left: 493px;
+  top: 180px;
+  width: 470px;
+  height: 53px;
+  color: #ffff00;
+  font-family: Star4000, monospace;
+  font-size: 41px;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -4px;
+  text-transform: none;
+}
+
+#cc-stats {
+  position: absolute;
+  left: 512px;
+  top: 238px;
+  width: 470px;
+  height: 308px;
+  color: white;
+  font-family: Star4000, monospace;
+  font-size: 42px;
+  line-height: 1.05;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 24px;
+  row-gap: 17px;
+  align-content: start;
+  letter-spacing: -3px;
+  text-transform: none;
+}
+
+/* LATEST OBSERVATIONS */
+
+#latest-table {
+  position: absolute;
+  left: 123px;
+  top: 177px;
+  width: 890px;
+  height: 589px;
+  color: white;
+  font-family: Star4000, monospace;
+  font-size: 37px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.latest-row {
+  display: grid;
+  grid-template-columns: 410px 80px 250px 130px;
+  column-gap: 6px;
+  align-items: center;
+  min-height: 63px;
+}
+
+.latest-station {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#latest-message {
+  position: absolute;
+  left: 185px;
+  top: 330px;
+  width: 720px;
+  color: #ffff00;
+  font-family: Star4000, monospace;
+  font-size: 44px;
+  text-align: center;
+  text-transform: none;
+}
+
+/* REGIONAL OBSERVATIONS */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #001244;
+  font-family: Star4000, monospace;
+}
+
+.leaflet-tile {
+  filter: saturate(0.75) hue-rotate(155deg) brightness(0.8) contrast(1.2);
+}
+
+.regional-dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000;
+}
+
+.regional-marker {
+  width: 7px;
+  height: 7px;
+  background: white;
+  border-radius: 50%;
+  margin: 0 auto 2px;
+}
+
+.regional-dot img {
+  width: 42px;
+  image-rendering: pixelated;
+  display: block;
+  margin: 0 auto;
+}
+
+.regional-temp {
+  color: #ffff00;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.regional-name {
+  color: white;
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* HOURLY FORECAST */
+
+#page-hourly {
+  background: url("/bg/ws4000travel.png") center / 100% 100% no-repeat;
+  overflow: hidden;
+}
+
+#hourly-window {
+  position: absolute;
+  left: 45px;
+  top: 148px;
+  width: 1010px;
+  height: 650px;
+  overflow: hidden;
+}
+
+#hourly-table {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1010px;
+  min-height: 1900px;
+  color: #ffff00;
+  font-family: Star4000LargeCompressed, monospace;
+  font-size: 56px;
+  line-height: 1;
+  font-weight: normal;
+  filter: blur(0.35px);
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000,
+     4px  4px 0 #000,
+     5px  5px 0 #000;
+
+  animation: hourlyScroll 32s linear infinite;
+}
+
+.hourly-row {
+  display: grid;
+  grid-template-columns: 355px 250px 130px 140px 220px;
+  align-items: center;
+  min-height: 92px;
+}
+
+.hourly-time {
+  color: #ffff00;
+  white-space: nowrap;
+}
+
+.hourly-icon {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  justify-self: center;
+  filter: blur(0.2px);
+}
+
+.hourly-temp {
+  color: #ffff00;
+  text-align: center;
+}
+
+.hourly-like {
+  color: #e00000;
+  text-align: center;
+}
+
+.hourly-wind {
+  color: #ffff00;
+  text-align: left;
+  white-space: nowrap;
+}
+
+#hourly-message {
+  position: absolute;
+  left: 150px;
+  top: 330px;
+  width: 800px;
+  color: #ffff00;
+  font-family: Star4000LargeCompressed, monospace;
+  font-size: 62px;
+  text-align: center;
+  filter: blur(0.35px);
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000,
+     4px  4px 0 #000;
+}
+
+@keyframes hourlyScroll {
+  0% {
+    transform: translateY(0);
+  }
+
+  18% {
+    transform: translateY(0);
+  }
+
+  88% {
+    transform: translateY(-1450px);
+  }
+
+  100% {
+    transform: translateY(-1450px);
+  }
+}
+
+/* BOTTOM BANNER */
+
+#bottom-banner {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1091px;
+  height: 120px;
+  z-index: 30;
+  background: #243575;
+  color: white;
+  font-family: Star4000, monospace;
+  font-size: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: none;
+}
+
+/* OPTIONAL SMALL FONT UTILITY */
+
+.star-small {
+  font-family: Star4000Small, monospace;
+}
+
+/* EDITOR PANEL */
+
+#editor-panel {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: #090918;
+  border-bottom: 2px solid #1e1e44;
+  padding: 8px 14px;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+#editor-name {
+  color: #ffff00;
+  min-width: 120px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+}
+
+#editor-panel select,
+#editor-panel input {
+  background: #14142a;
+  color: white;
+  border: 1px solid #333366;
+  height: 28px;
+  padding: 0 6px;
+  font-family: Arial, sans-serif;
+}
+
+#editor-panel input {
+  width: 70px;
+}
+
+#editor-panel label {
+  color: #aaa;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+}
+
+body.editor-on [data-edit-id] {
+  pointer-events: auto !important;
+  cursor: move !important;
+  outline: 1px dashed rgba(255, 255, 0, 0.65);
+  outline-offset: 3px;
+}
+
+body.editor-on [data-edit-id].editor-selected {
+  outline: 2px solid #ffff00;
+  outline-offset: 4px;
+  box-shadow: 0 0 14px rgba(255, 255, 0, 0.4);
+}
+
+#page-regional {
+  position: absolute !important;
+  inset: 0 !important;
+  overflow: hidden !important;
+  background: #001244 !important;
+  isolation: isolate !important;
+}
+
+/* All regional layers use the real background image size */
+#regional-basemap,
+#regional-frame,
+#regional-dots {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 1787px !important;
+  height: 1374px !important;
+  transform: translate(-50%, -50%) !important;
+  inset: auto !important;
+}
+
+/* Tile map behind */
+#regional-basemap {
+  z-index: 1 !important;
+  background: #001244 !important;
+}
+
+/* WeatherSTAR frame/background in front of tile map */
+#regional-frame {
+  z-index: 50 !important;
+  display: block !important;
+  pointer-events: none !important;
+  background: none !important;
+}
+
+/* Actual PNG at original size */
+#regional-frame-img {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 1787px !important;
+  height: 1374px !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+/* Dots on top */
+#regional-dots {
+  z-index: 100 !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+/* Leaflet map fills the same 1787 x 1374 layer */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background: #001244 !important;
+}
+
+.leaflet-pane,
+.leaflet-map-pane,
+.leaflet-tile-pane,
+.leaflet-overlay-pane,
+.leaflet-marker-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-tile {
+  filter: saturate(0.75) hue-rotate(155deg) brightness(0.8) contrast(1.2);
+}
+
+#regional-frame-img {
+  position: absolute !important;
+  left: 0px !important;
+  top: 0px !important;
+  width: 1787px !important;
+  height: 1374px !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+/* Let the editor grab the regional image only while editing */
+body.editor-on #regional-frame {
+  pointer-events: auto !important;
+}
+
+body.editor-on #regional-frame-img {
+  pointer-events: auto !important;
+  cursor: move !important;
+}
+
+/* FINAL REGIONAL EXPORTED POSITIONS */
+#regional-frame {
+  position: absolute !important;
+  left: 0px !important;
+  top: 0px !important;
+  width: 1091px !important;
+  height: 820px !important;
+  transform: none !important;
+  z-index: 50 !important;
+  pointer-events: none !important;
+}
+
+#regional-frame-img {
+  position: absolute !important;
+  left: 546px !important;
+  top: 409px !important;
+  width: 1091px !important;
+  height: 820px !important;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+#regional-dots {
+  position: absolute !important;
+  left: 504px !important;
+  top: 291px !important;
+  width: 1091px !important;
+  height: 820px !important;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  z-index: 100 !important;
+  pointer-events: none !important;
+}
+
+#bottom-banner {
+  position: absolute !important;
+  left: 4px !important;
+  top: 689px !important;
+  bottom: auto !important;
+  width: 1091px !important;
+  height: 158px !important;
+  font-size: 42px !important;
+  transform: rotate(0deg) !important;
+  z-index: 300 !important;
+}

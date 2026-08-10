@@ -1,0 +1,28 @@
+export function renderRegional() {
+  const page =
+    document.getElementById("page-regional") ||
+    document.querySelector("[data-page='regional']") ||
+    document.querySelector(".page-regional");
+
+  if (!page) return;
+
+  page.innerHTML = `
+    <iframe
+      id="regional-map-frame"
+      src="/regional-map.html"
+      title="WeatherSTAR Regional Map"
+      style="
+        position:absolute;
+        left:0;
+        top:0;
+        width:1091px;
+        height:820px;
+        border:0;
+        overflow:hidden;
+        background:#001244;
+      "
+    ></iframe>
+  `;
+}
+
+export default renderRegional;

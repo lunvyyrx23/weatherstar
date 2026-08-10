@@ -20,6 +20,11 @@
   },
   "homepage": "https://lunvyyrx23.github.io/weatherstar/",
   "devDependencies": {
+    "sharp": "^0.35.3",
     "vite": "^8.1.0"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "maplibre-gl": "^6.2.0"
   }
 }

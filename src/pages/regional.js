@@ -1,83 +1,94 @@
-import { cities, regionalDotOffsets } from "../map/cities.js";
-import { getIconPath } from "../utils/icons.js";
+function getMainWeatherSearchValue() {
+  const input =
+    document.getElementById("city-input") ||
+    document.getElementById("cityInput") ||
+    document.getElementById("locationInput") ||
+    document.getElementById("placeInput") ||
+    document.getElementById("searchInput") ||
+    document.querySelector("input[type='search']") ||
+    document.querySelector("input");
 
-const REGIONAL_BOUNDS = {
-  north: 36.8,
-  south: 29.5,
-  west: -87.8,
-  east: -79.0
-};
+  const value = input && input.value ? input.value.trim() : "";
+  return value || "Augusta, GA";
+}
+function getRegionalContainer(target) {
+  if (target && target.nodeType === 1) return target;
 
-function projectCity(city) {
-  const width = 1091;
-  const height = 820;
-
-  const x =
-    ((city.lon - REGIONAL_BOUNDS.west) /
-      (REGIONAL_BOUNDS.east - REGIONAL_BOUNDS.west)) *
-    width;
-
-  const y =
-    ((REGIONAL_BOUNDS.north - city.lat) /
-      (REGIONAL_BOUNDS.north - REGIONAL_BOUNDS.south)) *
-    height;
-
-  const offset = regionalDotOffsets[city.slug] || { x: 0, y: 0 };
-
-  return {
-    x: x + offset.x,
-    y: y + offset.y
-  };
+  return (
+    document.getElementById("page-regional") ||
+    document.querySelector("[data-page='regional']") ||
+    document.querySelector(".page-regional") ||
+    document.querySelector(".regional-page")
+  );
 }
 
-function formatTemp(temp) {
-  if (temp === null || temp === undefined || temp === "--") return "--";
-  return `${temp}°`;
-}
+function mountRegionalTestScreen(target) {
+  const page = getRegionalContainer(target);
 
-export function renderRegionalPage(regionalWeather = [], status = "") {
-  const dots = document.querySelector("#regional-dots");
+  if (!page) {
+    console.warn("Regional page container not found. Test screen was not mounted.");
+    return;
+  }
 
-  if (!dots) return;
+  const regionalLocation = getMainWeatherSearchValue();
 
-  const weatherBySlug = new Map();
+  page.innerHTML = `
+    <iframe
+      id="regional-test-screen"
+      src="/regional-screen.html?location=${encodeURIComponent(getMainWeatherSearchValue())}"
+      title="Regional Observations"
+      scrolling="no"
+      style="
+        position:absolute;
+        left:0;
+        top:0;
+        width:1091px;
+        height:820px;
+        border:0;
+        margin:0;
+        padding:0;
+        display:block;
+        overflow:hidden;
+        background:#001244;
+      "
+    ></iframe>
+  `;
 
-  if (Array.isArray(regionalWeather)) {
-    regionalWeather.forEach(item => {
-      weatherBySlug.set(item.slug, item);
+  const iframe = page.querySelector("#regional-test-screen");
+  if (iframe) {
+    iframe.addEventListener("load", () => {
+      iframe.contentWindow?.postMessage({
+        type: "weatherstar:setRegionalLocation",
+        location: regionalLocation
+      }, "*");
     });
   }
 
-  dots.innerHTML = cities
-    .map(city => {
-      const p = projectCity(city);
-
-      const weather = weatherBySlug.get(city.slug) || {
-        temp: "--",
-        condition: "Cloudy",
-        isDaytime: true
-      };
-
-      return `
-        <div
-          class="regional-dot"
-          data-edit-id="reg-dot-${city.slug}"
-          style="left:${p.x}px; top:${p.y}px;"
-        >
-          <div class="regional-marker"></div>
-          <img src="${getIconPath(weather.condition, weather.isDaytime)}" alt="" />
-          <div class="regional-temp">${formatTemp(weather.temp)}</div>
-          <div class="regional-name">${city.name}</div>
-        </div>
-      `;
-    })
-    .join("");
-
-  if (status) {
-    dots.innerHTML += `
-      <div id="regional-status" data-edit-id="regional-status">
-        ${status}
-      </div>
-    `;
-  }
+  Object.assign(page.style, {
+    position: "absolute",
+    left: "0px",
+    top: "0px",
+    width: "1091px",
+    height: "820px",
+    overflow: "hidden",
+    background: "#001244"
+  });
 }
+
+export function renderRegionalPage(target) {
+  mountRegionalTestScreen(target);
+}
+
+export function renderRegional(target) {
+  mountRegionalTestScreen(target);
+}
+
+export function initRegional(target) {
+  mountRegionalTestScreen(target);
+}
+
+export function showRegional(target) {
+  mountRegionalTestScreen(target);
+}
+
+export default renderRegionalPage;

@@ -1,0 +1,21 @@
+﻿export const cities = [
+  { slug: "seattle", name: "SEATTLE", lat: 47.6062, lon: -122.3321 },
+  { slug: "portland", name: "PORTLAND", lat: 45.5152, lon: -122.6784 },
+  { slug: "san-francisco", name: "SAN FRANCISCO", lat: 37.7749, lon: -122.4194 },
+  { slug: "los-angeles", name: "LOS ANGELES", lat: 34.0522, lon: -118.2437 },
+  { slug: "las-vegas", name: "LAS VEGAS", lat: 36.1699, lon: -115.1398 },
+  { slug: "phoenix", name: "PHOENIX", lat: 33.4484, lon: -112.0740 },
+  { slug: "denver", name: "DENVER", lat: 39.7392, lon: -104.9903 },
+  { slug: "dallas", name: "DALLAS", lat: 32.7767, lon: -96.7970 },
+  { slug: "houston", name: "HOUSTON", lat: 29.7604, lon: -95.3698 },
+  { slug: "minneapolis", name: "MINNEAPOLIS", lat: 44.9778, lon: -93.2650 },
+  { slug: "chicago", name: "CHICAGO", lat: 41.8781, lon: -87.6298 },
+  { slug: "st-louis", name: "ST LOUIS", lat: 38.6270, lon: -90.1994 },
+  { slug: "new-orleans", name: "NEW ORLEANS", lat: 29.9511, lon: -90.0715 },
+  { slug: "atlanta", name: "ATLANTA", lat: 33.7490, lon: -84.3880 },
+  { slug: "miami", name: "MIAMI", lat: 25.7617, lon: -80.1918 },
+  { slug: "charlotte", name: "CHARLOTTE", lat: 35.2271, lon: -80.8431 },
+  { slug: "washington", name: "WASHINGTON", lat: 38.9072, lon: -77.0369 },
+  { slug: "new-york", name: "NEW YORK", lat: 40.7128, lon: -74.0060 },
+  { slug: "boston", name: "BOSTON", lat: 42.3601, lon: -71.0589 }
+];

@@ -1,0 +1,45 @@
+/* Hourly table editor override */
+#hourly-table,
+.hourly-table {
+  position: absolute !important;
+  left: 95px;
+  top: 180px;
+  width: 900px;
+  height: auto;
+  z-index: 20 !important;
+}
+
+body.editor-on #hourly-table,
+body.editor-on .hourly-table {
+  pointer-events: auto !important;
+  cursor: move !important;
+  outline: 2px dashed yellow !important;
+}
+/* Makes selected editor elements stretchable */
+body.editor-on [data-edit-id].editor-selected {
+  resize: both !important;
+  overflow: auto !important;
+  min-width: 80px !important;
+  min-height: 40px !important;
+}
+
+/* Make the hourly table especially easy to stretch */
+body.editor-on #hourly-table.editor-selected,
+body.editor-on .hourly-table.editor-selected {
+  resize: both !important;
+  overflow: auto !important;
+  outline: 3px solid yellow !important;
+  cursor: nwse-resize !important;
+}
+
+/* Horizontal-only option if needed later */
+body.editor-on .resize-horizontal {
+  resize: horizontal !important;
+  overflow: auto !important;
+}
+
+/* Vertical-only option if needed later */
+body.editor-on .resize-vertical {
+  resize: vertical !important;
+  overflow: auto !important;
+}

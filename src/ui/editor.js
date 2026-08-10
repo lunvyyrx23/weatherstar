@@ -1,4 +1,4 @@
-const STORAGE_KEY = "weatherstar-layout-v1";
+﻿const STORAGE_KEY = "weatherstar-layout-v1";
 
 let editMode = false;
 let selectedEl = null;
@@ -30,6 +30,10 @@ function numberFromPx(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function setImportantPx(el, prop, value) {
+  el.style.setProperty(prop, `${Math.round(value)}px`, "important");
+}
+
 function readElementLayout(el) {
   const style = getComputedStyle(el);
 
@@ -46,11 +50,14 @@ function readElementLayout(el) {
 function applyElementLayout(el, item) {
   if (!el || !item) return;
 
-  if (Number.isFinite(item.left)) el.style.left = `${item.left}px`;
-  if (Number.isFinite(item.top)) el.style.top = `${item.top}px`;
-  if (Number.isFinite(item.width) && item.width > 0) el.style.width = `${item.width}px`;
-  if (Number.isFinite(item.height) && item.height > 0) el.style.height = `${item.height}px`;
-  if (Number.isFinite(item.fontSize) && item.fontSize > 0) el.style.fontSize = `${item.fontSize}px`;
+  if (Number.isFinite(item.left)) setImportantPx(el, "left", item.left);
+  if (Number.isFinite(item.top)) setImportantPx(el, "top", item.top);
+  if (Number.isFinite(item.width) && item.width > 0) setImportantPx(el, "width", item.width);
+  if (Number.isFinite(item.height) && item.height > 0) setImportantPx(el, "height", item.height);
+
+  if (Number.isFinite(item.fontSize) && item.fontSize > 0) {
+    setImportantPx(el, "font-size", item.fontSize);
+  }
 }
 
 export function applySavedLayout() {
@@ -127,11 +134,11 @@ function setSelectedProp(prop, value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return;
 
-  if (prop === "left") selectedEl.style.left = `${n}px`;
-  if (prop === "top") selectedEl.style.top = `${n}px`;
-  if (prop === "width") selectedEl.style.width = `${n}px`;
-  if (prop === "height") selectedEl.style.height = `${n}px`;
-  if (prop === "fontSize") selectedEl.style.fontSize = `${n}px`;
+  if (prop === "left") setImportantPx(selectedEl, "left", n);
+  if (prop === "top") setImportantPx(selectedEl, "top", n);
+  if (prop === "width") setImportantPx(selectedEl, "width", n);
+  if (prop === "height") setImportantPx(selectedEl, "height", n);
+  if (prop === "fontSize") setImportantPx(selectedEl, "font-size", n);
 
   saveCurrentElement();
 }
@@ -163,8 +170,8 @@ function moveDrag(event) {
   const dx = event.clientX - dragStart.mouseX;
   const dy = event.clientY - dragStart.mouseY;
 
-  selectedEl.style.left = `${Math.round(dragStart.left + dx)}px`;
-  selectedEl.style.top = `${Math.round(dragStart.top + dy)}px`;
+  setImportantPx(selectedEl, "left", dragStart.left + dx);
+  setImportantPx(selectedEl, "top", dragStart.top + dy);
 
   updateInputsFromSelected();
 }
@@ -204,6 +211,127 @@ function exportLayout() {
   });
 }
 
+
+function getParentBox() {
+  if (!selectedEl || !selectedEl.parentElement) return null;
+
+  const parent = selectedEl.parentElement;
+  const box = parent.getBoundingClientRect();
+
+  return {
+    width: Math.round(box.width || parent.offsetWidth),
+    height: Math.round(box.height || parent.offsetHeight)
+  };
+}
+
+function getNaturalSize(el) {
+  return {
+    width: el.naturalWidth || el.videoWidth || el.offsetWidth || 1,
+    height: el.naturalHeight || el.videoHeight || el.offsetHeight || 1
+  };
+}
+
+function removeSelectedTransform() {
+  if (!selectedEl) return;
+  selectedEl.style.setProperty("transform", "none", "important");
+}
+
+function fitSelectedToScreen() {
+  if (!selectedEl) {
+    alert("Pick an element first.");
+    return;
+  }
+
+  const box = getParentBox();
+  if (!box) return;
+
+  removeSelectedTransform();
+
+  setImportantPx(selectedEl, "left", 0);
+  setImportantPx(selectedEl, "top", 0);
+  setImportantPx(selectedEl, "width", box.width);
+  setImportantPx(selectedEl, "height", box.height);
+
+  saveCurrentElement();
+  updateInputsFromSelected();
+}
+
+function fitSelectedCover() {
+  if (!selectedEl) {
+    alert("Pick an element first.");
+    return;
+  }
+
+  const box = getParentBox();
+  if (!box) return;
+
+  const natural = getNaturalSize(selectedEl);
+  const scale = Math.max(box.width / natural.width, box.height / natural.height);
+
+  const width = Math.round(natural.width * scale);
+  const height = Math.round(natural.height * scale);
+  const left = Math.round((box.width - width) / 2);
+  const top = Math.round((box.height - height) / 2);
+
+  removeSelectedTransform();
+
+  setImportantPx(selectedEl, "left", left);
+  setImportantPx(selectedEl, "top", top);
+  setImportantPx(selectedEl, "width", width);
+  setImportantPx(selectedEl, "height", height);
+
+  saveCurrentElement();
+  updateInputsFromSelected();
+}
+
+function fitSelectedInside() {
+  if (!selectedEl) {
+    alert("Pick an element first.");
+    return;
+  }
+
+  const box = getParentBox();
+  if (!box) return;
+
+  const natural = getNaturalSize(selectedEl);
+  const scale = Math.min(box.width / natural.width, box.height / natural.height);
+
+  const width = Math.round(natural.width * scale);
+  const height = Math.round(natural.height * scale);
+  const left = Math.round((box.width - width) / 2);
+  const top = Math.round((box.height - height) / 2);
+
+  removeSelectedTransform();
+
+  setImportantPx(selectedEl, "left", left);
+  setImportantPx(selectedEl, "top", top);
+  setImportantPx(selectedEl, "width", width);
+  setImportantPx(selectedEl, "height", height);
+
+  saveCurrentElement();
+  updateInputsFromSelected();
+}
+
+function centerSelected() {
+  if (!selectedEl) {
+    alert("Pick an element first.");
+    return;
+  }
+
+  const box = getParentBox();
+  if (!box) return;
+
+  const current = readElementLayout(selectedEl);
+
+  removeSelectedTransform();
+
+  setImportantPx(selectedEl, "left", Math.round((box.width - current.width) / 2));
+  setImportantPx(selectedEl, "top", Math.round((box.height - current.height) / 2));
+
+  saveCurrentElement();
+  updateInputsFromSelected();
+}
+
 export function refreshEditorTargets() {
   applySavedLayout();
   populateEditorList();
@@ -213,6 +341,8 @@ export function initEditor() {
   const toggle = document.querySelector("#edit-toggle");
   const panel = document.querySelector("#editor-panel");
   const select = document.querySelector("#editor-select");
+
+  if (!toggle || !panel || !select) return;
 
   toggle.addEventListener("click", () => {
     editMode = !editMode;
@@ -242,6 +372,16 @@ export function initEditor() {
 
   document.querySelector("#editor-reset").addEventListener("click", resetSelected);
   document.querySelector("#editor-reset-all").addEventListener("click", resetAll);
+  const fitScreenBtn = document.querySelector("#editor-fit-screen");
+  const fitCoverBtn = document.querySelector("#editor-fit-cover");
+  const fitInsideBtn = document.querySelector("#editor-fit-inside");
+  const centerBtn = document.querySelector("#editor-center");
+
+  if (fitScreenBtn) fitScreenBtn.addEventListener("click", fitSelectedToScreen);
+  if (fitCoverBtn) fitCoverBtn.addEventListener("click", fitSelectedCover);
+  if (fitInsideBtn) fitInsideBtn.addEventListener("click", fitSelectedInside);
+  if (centerBtn) centerBtn.addEventListener("click", centerSelected);
+
   document.querySelector("#editor-export").addEventListener("click", exportLayout);
 
   document.addEventListener("pointerdown", startDrag);
@@ -250,3 +390,4 @@ export function initEditor() {
 
   refreshEditorTargets();
 }
+

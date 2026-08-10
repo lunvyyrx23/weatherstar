@@ -1,4 +1,6 @@
 import "./style.css";
+import "./styles/regional.css";
+
 import { geocodeLocation } from "./api/geocode.js";
 import { getWeatherForCoords } from "./api/weather.js";
 import { getLatestObservations } from "./api/observations.js";
@@ -6,6 +8,7 @@ import { getRegionalWeather } from "./api/regionalWeather.js";
 
 import { renderCurrentPage } from "./pages/current.js";
 import { renderLatestObservationsPage } from "./pages/latestObservations.js";
+import { renderHourlyForecastPage } from "./pages/hourlyForecast.js";
 import { renderRegionalPage } from "./pages/regional.js";
 
 import { initEditor, refreshEditorTargets } from "./ui/editor.js";
@@ -13,10 +16,11 @@ import { initEditor, refreshEditorTargets } from "./ui/editor.js";
 let appState = {
   weather: {
     location: "Charlotte, NC",
+    displayLocation: "Charlotte",
     coords: { lat: 35.2271, lon: -80.8431 },
     temp: 84,
     condition: "Sunny",
-    wind: "SW 5 mph",
+    wind: "SW 5 MPH",
     isDaytime: true,
     hourly: [],
     stationsUrl: null,
@@ -27,13 +31,13 @@ let appState = {
       visibility: "--",
       pressure: "--",
       feelsLabel: "Feels Like:",
-      feelsValue: "84°"
+      feelsValue: "84Â°"
     }
   },
   observations: [],
-  observationsStatus: "LOADING OBSERVATIONS...",
+  observationsStatus: "Loading Observations",
   regionalWeather: [],
-  regionalStatus: "LOADING REGIONAL..."
+  regionalStatus: "Loading Regional"
 };
 
 document.querySelector("#app").innerHTML = `
@@ -43,6 +47,7 @@ document.querySelector("#app").innerHTML = `
     <button id="update-btn">Update</button>
     <button id="current-btn">Current</button>
     <button id="latest-btn">Latest Obs</button>
+    <button id="hourly-btn">Hourly</button>
     <button id="regional-btn">Regional</button>
     <button id="edit-toggle">Edit Layout</button>
   </div>
@@ -63,6 +68,10 @@ document.querySelector("#app").innerHTML = `
     <button id="editor-save">Save</button>
     <button id="editor-reset">Reset Selected</button>
     <button id="editor-reset-all">Reset All</button>
+        <button id="editor-fit-screen">Fit Screen</button>
+    <button id="editor-fit-cover">Fit Cover</button>
+    <button id="editor-fit-inside">Fit Inside</button>
+    <button id="editor-center">Center</button>
     <button id="editor-export">Export</button>
   </div>
 
@@ -74,6 +83,8 @@ document.querySelector("#app").innerHTML = `
     <section id="page-current" class="page active"></section>
 
     <section id="page-latest" class="page"></section>
+
+    <section id="page-hourly" class="page"></section>
 
     <section id="page-regional" class="page">
       <div id="regional-basemap"></div>
@@ -87,29 +98,68 @@ document.querySelector("#app").innerHTML = `
   </main>
 `;
 
-function showPage(pageName) {
+function getEl(selector) {
+  return document.querySelector(selector);
+}
+
+function setHeader(text) {
+  const header = getEl("#page-header");
+  if (header) header.innerHTML = text;
+}
+
+function setBanner(text) {
+  const banner = getEl("#bottom-banner");
+  if (banner) banner.textContent = text;
+}
+
+function hideAllPages() {
   document.querySelectorAll(".page").forEach(page => {
     page.classList.remove("active");
   });
+}
+
+function showPage(pageName) {
+  hideAllPages();
 
   if (pageName === "current") {
-    document.querySelector("#page-current").classList.add("active");
-    document.querySelector("#page-header").innerHTML = "Current<br>Conditions";
+    const page = getEl("#page-current");
+    if (!page) return;
+
+    page.classList.add("active");
+    setHeader("Current<br>Conditions");
     renderCurrentPage(appState.weather);
   }
 
   if (pageName === "latest") {
-    document.querySelector("#page-latest").classList.add("active");
-document.querySelector("#page-header").innerHTML = "Latest<br>Observations";
+    const page = getEl("#page-latest");
+    if (!page) return;
+
+    page.classList.add("active");
+    setHeader("Latest<br>Observations");
+    setBanner("Latest Observations");
     renderLatestObservationsPage(
       appState.observations,
       appState.observationsStatus
     );
   }
 
+  if (pageName === "hourly") {
+    const page = getEl("#page-hourly");
+    if (!page) return;
+
+    page.classList.add("active");
+    setHeader("Hourly<br>Forecast");
+    setBanner("Hourly Forecast");
+    renderHourlyForecastPage(appState.weather.hourly);
+  }
+
   if (pageName === "regional") {
-    document.querySelector("#page-regional").classList.add("active");
-    document.querySelector("#page-header").innerHTML = "REGIONAL<br>OBSERVATIONS";
+    const page = getEl("#page-regional");
+    if (!page) return;
+
+    page.classList.add("active");
+    setHeader("Regional<br>Observations");
+    setBanner("Regional Observations");
     renderRegionalPage(appState.regionalWeather, appState.regionalStatus);
   }
 
@@ -117,17 +167,18 @@ document.querySelector("#page-header").innerHTML = "Latest<br>Observations";
 }
 
 async function updateWeather() {
-  const input = document.querySelector("#city-input").value;
+  const input = getEl("#city-input")?.value || "Charlotte, NC";
 
   try {
-    document.querySelector("#update-btn").textContent = "Loading...";
+    const updateButton = getEl("#update-btn");
+    if (updateButton) updateButton.textContent = "Loading...";
 
     const place = await geocodeLocation(input);
     const weather = await getWeatherForCoords(place.lat, place.lon, place.label);
 
     appState.weather = weather;
     appState.observations = [];
-    appState.observationsStatus = "LOADING OBSERVATIONS...";
+    appState.observationsStatus = "Loading Observations";
 
     showPage("current");
     loadLatestObservations();
@@ -135,7 +186,8 @@ async function updateWeather() {
     console.error(error);
     alert(error.message);
   } finally {
-    document.querySelector("#update-btn").textContent = "Update";
+    const updateButton = getEl("#update-btn");
+    if (updateButton) updateButton.textContent = "Update";
   }
 }
 
@@ -148,29 +200,21 @@ async function loadLatestObservations() {
 
     appState.observations = observations;
     appState.observationsStatus =
-      observations.length > 0 ? "" : "NO RECENT OBSERVATIONS";
+      observations.length > 0 ? "" : "No Recent Observations";
   } catch (error) {
     console.error(error);
     appState.observations = [];
-    appState.observationsStatus = "OBSERVATIONS UNAVAILABLE";
+    appState.observationsStatus = "Observations Unavailable";
   }
 
- if (pageName === "latest") {
-  document.querySelector("#page-latest").classList.add("active");
-  document.querySelector("#page-header").innerHTML = "Latest<br>Observations";
-  document.querySelector("#bottom-banner").textContent = "Latest Observations";
-  renderLatestObservationsPage(
-    appState.observations,
-    appState.observationsStatus
-  );
+  if (getEl("#page-latest")?.classList.contains("active")) {
+    showPage("latest");
+  }
 }
 
-if (pageName === "regional") {
-  document.querySelector("#page-regional").classList.add("active");
-  document.querySelector("#page-header").innerHTML = "Regional<br>Observations";
-  document.querySelector("#bottom-banner").textContent = "Regional Observations";
-  renderRegionalPage(appState.regionalWeather, appState.regionalStatus);
-}
+async function loadRegionalWeather() {
+  appState.regionalStatus = "Loading Regional";
+  showPage("regional");
 
   try {
     const regionalWeather = await getRegionalWeather();
@@ -180,33 +224,41 @@ if (pageName === "regional") {
   } catch (error) {
     console.error(error);
     appState.regionalWeather = [];
-    appState.regionalStatus = "REGIONAL UNAVAILABLE";
+    appState.regionalStatus = "Regional Unavailable";
   }
 
   showPage("regional");
 }
 
-document.querySelector("#current-btn").addEventListener("click", () => {
+getEl("#current-btn")?.addEventListener("click", () => {
   showPage("current");
 });
 
-document.querySelector("#latest-btn").addEventListener("click", () => {
+getEl("#latest-btn")?.addEventListener("click", () => {
   showPage("latest");
 });
 
-document.querySelector("#regional-btn").addEventListener("click", () => {
+getEl("#hourly-btn")?.addEventListener("click", () => {
+  showPage("hourly");
+});
+
+getEl("#regional-btn")?.addEventListener("click", () => {
   loadRegionalWeather();
 });
 
-document.querySelector("#update-btn").addEventListener("click", () => {
+getEl("#update-btn")?.addEventListener("click", () => {
   updateWeather();
 });
 
 renderCurrentPage(appState.weather);
 renderLatestObservationsPage(appState.observations, appState.observationsStatus);
+renderHourlyForecastPage(appState.weather.hourly);
 renderRegionalPage(appState.regionalWeather, appState.regionalStatus);
 
 initEditor();
 refreshEditorTargets();
 
 updateWeather();
+
+
+
